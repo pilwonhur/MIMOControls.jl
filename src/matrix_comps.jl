@@ -3,11 +3,16 @@ function kalmandecomp(A,B,C,D)
 	# m: number of outputs
 	# r: number of inputs
 
+	A=convert(Array{Float64,2},hcat(A));
+	B=convert(Array{Float64,2},hcat(B));
+	C=convert(Array{Float64,2},hcat(C));
+	D=convert(Array{Float64,2},hcat(D));
+
 	n,m=size(A);
 	if n!=m
 		error("Matrix A should be a square matrix.")
 	end
-	n1,r=size(hcat(B));
+	n1,r=size(B);
 	if n!=n1
 		error("Matrix B should have the same number of rows as the number of states.")
 	end
@@ -15,7 +20,7 @@ function kalmandecomp(A,B,C,D)
 	if n!=n1
 		error("Matrix C should have the same number of columns as the number of states.")
 	end
-	m1,r1=size(hcat(D));
+	m1,r1=size(D);
 	if m!=m1
 		error("Matrix D should have the same number of rows as the number of outputs.")
 	end
@@ -23,7 +28,7 @@ function kalmandecomp(A,B,C,D)
 		error("Matrix D should have the same number of columns as the number of inputs")
 	end
 
-	Wc=ctrb(A,hcat(B));
+	Wc=ctrb(A,B);
 	Wo=obsv(A,C);
 	nc=rank(Wc);
 	no=rank(Wo);
