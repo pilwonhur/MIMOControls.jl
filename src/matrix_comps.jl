@@ -1,3 +1,11 @@
+mutable struct MQR
+	Q::Any
+	R::Any
+	U::Any
+	V::Any
+end
+
+
 function mqr(U;p=[])
 	# modified qr decomposition
 	# if m>=n, then it's the same as qr
@@ -11,8 +19,10 @@ function mqr(U;p=[])
 	# Ex) mqr(U,p=[1,2])
 	# In this case, the first 2 columns of U will be applied to the first 2 columns of Q with the same order.
 	#
-	# Q,R,U,Uperp=mqr()
-	# where U=Q[1:r]
+	# out=mqr()
+	# out.Q, out.R, out.U, out.V
+	# where out.U=Q[1:r]
+	# out.V=out.U perp
 
 
 	m,n=size(U);
@@ -20,10 +30,11 @@ function mqr(U;p=[])
 	if m>=n
 		F=qr(U)
 		if r<m
-			return F.Q, F.R, F.Q[:,1:r], F.Q[:,r+1:n]
+			out=MQR(F.Q, F.R, F.Q[:,1:r], F.Q[:,r+1:m])
 		else
-			return F.Q, F.R, F.Q[:,1:r], []
+			out=MQR(F.Q, F.R, F.Q[:,1:r], [])
 		end
+		return out
 	else 	# m<n
 		F=qr(U,Val(true));	# get the independent columns and it's permuation number
 
@@ -36,10 +47,11 @@ function mqr(U;p=[])
 		end
 		F=qr(U[:,pnew])
 		if r<m
-			return F.Q, (F.Q)'*U, F.Q[:,1:r], F.Q[:,r+1:m]
+			out=MQR(F.Q, (F.Q)'*U, F.Q[:,1:r], F.Q[:,r+1:m])
 		else
-			return F.Q, (F.Q)'*U, F.Q[:,1:r], []
+			out=MQR(F.Q, (F.Q)'*U, F.Q[:,1:r], [])
 		end
+		return out
 	end
 end
 
@@ -94,7 +106,8 @@ function kalmandecomp(A,B,C,D)
 	# orthogonal controllable subspace
 	# https://blogs.mathworks.com/cleve/2016/07/25/compare-gram-schmidt-and-householder-orthogonalization-algorithms/
 	# household based qr is not what I wanted. The order is totally different
-	F=qr(Wc,Val(true));
+	# F=qr(Wc,Val(true));
+	F=mqr(Wc);
 	cont_subspace=F.Q[:,1:nc];
 	if nc<n
 		uncont_subspace=F.Q[:,nc+1:n];
@@ -103,7 +116,8 @@ function kalmandecomp(A,B,C,D)
 	end
 
 	# orthogonal observable subspace
-	F=qr(Wo',Val(true));
+	# F=qr(Wo',Val(true));
+	F=mqr(Wo');
 	obsv_subspace=F.Q[:,1:no];
 	if no<n
 		unobsv_subspace=F.Q[:,no+1:n];
@@ -124,14 +138,16 @@ function kalmandecomp(A,B,C,D)
 			[t2[:,i]=unobsv_subspace*coord1[:,i] for i=1:ncontunobs];
 
 			if ncontunobs<n-no
-				F=qr([t2 unobsv_subspace],Val(true));
+				# F=qr([t2 unobsv_subspace],Val(true));
+				F=mqr([t2 unobsv_subspace],p=(1:length(t2)));
 				t4=F.Q[:,ncontunobs+1:n-no];
 			end
 
 			if ncontunobs==nc
 				t1=[];
 			else
-				F=qr([t2 cont_subspace],Val(true));
+				# F=qr([t2 cont_subspace],Val(true));
+				F=mqr([t2 unobsv_subspace],p=(1:length(t2)));
 				t1=F.Q[:,ncontunobs+1:nc];
 			end
 		else 	# if t2 has no elements
