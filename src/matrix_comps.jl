@@ -1,3 +1,14 @@
+function findprojector(U)
+	# Input: a matrix U with independent basis column vectors
+	# Output: returns a projector onto the range space of U
+
+	# the following is a treatment for the case when U contains dependent vectors
+	r=rank(U);
+	F=qr(U,Val(true));	# get the independent columns and it's permuation number
+	V=qr(U[:,sort(F.p[1:r])])
+	return V*inv(V'*V)*V'
+end
+
 function kalmandecomp(A,B,C,D)
 	# n: number of states
 	# m: number of outputs
