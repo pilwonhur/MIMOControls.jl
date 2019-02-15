@@ -2,7 +2,7 @@ module MIMOControls
 
 export	kalmandecomp
 
-using ControlSystems, Polynomials, DifferentialEquations, LinearAlgebra
+using ControlSystems, LinearAlgebra
 
 include("matrix_comps.jl")
 end # module
