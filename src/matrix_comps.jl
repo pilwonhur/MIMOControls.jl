@@ -3,9 +3,11 @@ function findprojector(U)
 	# Output: returns a projector onto the range space of U
 
 	# the following is a treatment for the case when U contains dependent vectors
+	m,=size(U)
 	r=rank(U);
 	F=qr(U,Val(true));	# get the independent columns and it's permuation number
-	V=qr(U[:,sort(F.p[1:r])])
+	F=qr(U[:,sort(F.p[1:m])[1:r]])
+	V=F.Q[:,1:r]
 	return V*inv(V'*V)*V'
 end
 
