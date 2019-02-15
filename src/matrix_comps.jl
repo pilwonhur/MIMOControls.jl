@@ -7,7 +7,7 @@ function kalmandecomp(A,B,C,D)
 	if n!=m
 		error("Matrix A should be a square matrix.")
 	end
-	n1,r=size(B);
+	n1,r=size(hcat(B));
 	if n!=n1
 		error("Matrix B should have the same number of rows as the number of states.")
 	end
