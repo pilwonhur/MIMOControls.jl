@@ -77,27 +77,24 @@ function kalmandecomp(A,B,C,D)
 		else 	# if t2 has no elements
 			t4=unobsv_subspace;
 		end
-
-
-
 	end
 
 	ntemp=0;
 	if length(t1)>0
-		ntemp,=size(t1);
+		ntemp,=reverse(size(t1));
 		temp=t1;
 		if length(t2)>0
-			nntemp,=size(t2);
+			nntemp,=reverse(size(t2));
 			ntemp+=nntemp;
 			temp=[temp t2];
 		end
 	else
-		ntemp,=size(t2);
+		ntemp,=reverse(size(t2));
 		temp=t2;
 	end
 
 	if length(t4)>0
-		nntemp,=size(t4);
+		nntemp,=reverse(size(t4));
 		ntemp+=nntemp;
 		temp=[temp t4];
 	end
