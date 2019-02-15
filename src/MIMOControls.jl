@@ -1,7 +1,8 @@
 module MIMOControls
 
 export	kalmandecomp,
-		findprojector
+		findprojector,
+		mqr
 
 using ControlSystems, LinearAlgebra
 

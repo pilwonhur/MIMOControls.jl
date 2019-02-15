@@ -7,6 +7,8 @@ end
 
 
 function mqr(U;p=[])
+	# Author: Pilwon Hur, Ph.D.
+	#
 	# modified qr decomposition
 	# if m>=n, then it's the same as qr
 	# if m<n, then generic qr does not care of the column order of Q matrix
@@ -34,7 +36,7 @@ function mqr(U;p=[])
 		else
 			out=MQR(F.Q, F.R, F.Q[:,1:r], [])
 		end
-		return out
+		return out;
 	else 	# m<n
 		F=qr(U,Val(true));	# get the independent columns and it's permuation number
 
@@ -51,24 +53,31 @@ function mqr(U;p=[])
 		else
 			out=MQR(F.Q, (F.Q)'*U, F.Q[:,1:r], [])
 		end
-		return out
+		return out;
 	end
 end
 
 function findprojector(U)
+	# Author: Pilwon Hur, Ph.D.
+	#
 	# Input: a matrix U with independent basis column vectors
 	# Output: returns a projector onto the range space of U
 
 	# the following is a treatment for the case when U contains dependent vectors
 	m,=size(U)
-	r=rank(U);
-	F=qr(U,Val(true));	# get the independent columns and it's permuation number
-	F=qr(U[:,sort(F.p[1:m])[1:r]])
-	V=F.Q[:,1:r]
-	return V*inv(V'*V)*V'
+
+	F=mqr(U);
+	# r=rank(U);
+	# F=qr(U,Val(true));	# get the independent columns and it's permuation number
+	# F=qr(U[:,sort(F.p[1:m])[1:r]])
+	# V=F.Q[:,1:r]
+	V=F.U;
+	return V*inv(V'*V)*V';
 end
 
 function kalmandecomp(A,B,C,D)
+	# Author: Pilwon Hur, Ph.D.
+	#
 	# n: number of states
 	# m: number of outputs
 	# r: number of inputs
@@ -108,47 +117,40 @@ function kalmandecomp(A,B,C,D)
 	# household based qr is not what I wanted. The order is totally different
 	# F=qr(Wc,Val(true));
 	F=mqr(Wc);
-	cont_subspace=F.Q[:,1:nc];
-	if nc<n
-		uncont_subspace=F.Q[:,nc+1:n];
-	else
-		uncont_subspace=[];
-	end
-
+	cont_subspace=F.U;
+	uncont_subspace=F.V;
+	
 	# orthogonal observable subspace
 	# F=qr(Wo',Val(true));
 	F=mqr(Wo');
-	obsv_subspace=F.Q[:,1:no];
-	if no<n
-		unobsv_subspace=F.Q[:,no+1:n];
-	else
-		unobsv_subspace=[];
-	end
+	obsv_subspace=F.U;
+	unobsv_subspace=F.V;
 
 	# controllable and unobservable subspace
 	Proj_contsubspace=findprojector(cont_subspace);
 	t2=[];
 	t1=cont_subspace;	
 	t4=[];
-	if no<n 	# if unobservable subspace exists
+
+	# find controllable/unobservable and uncontrollable/unobservable subspaces if unobservable subspace exists
+	if no<n
 		coord1=nullspace((I-Proj_contsubspace)*unobsv_subspace);
+
+		# controllable/unobservable subspace
 		if length(coord1)>0		# if t2 has elements
 			ncontunobs,=reverse(size(coord1));
 			t2=zeros(n,ncontunobs);
 			[t2[:,i]=unobsv_subspace*coord1[:,i] for i=1:ncontunobs];
 
-			if ncontunobs<n-no
-				# F=qr([t2 unobsv_subspace],Val(true));
-				F=mqr([t2 unobsv_subspace],p=(1:length(t2)));
-				t4=F.Q[:,ncontunobs+1:n-no];
-			end
+			F=mqr([t2 unobsv_subspace],p=(1:length(t2)));	# F.U will return orthonormal basis for unobservable subspace
+			t4=F.U[:,ncontunobs+1:n-no]
 
 			if ncontunobs==nc
 				t1=[];
 			else
 				# F=qr([t2 cont_subspace],Val(true));
-				F=mqr([t2 unobsv_subspace],p=(1:length(t2)));
-				t1=F.Q[:,ncontunobs+1:nc];
+				F=mqr([t2 cont_subspace],p=(1:length(t2)));
+				t1=F.U[:,ncontunobs+1:nc];
 			end
 		else 	# if t2 has no elements
 			t4=unobsv_subspace;
@@ -175,13 +177,15 @@ function kalmandecomp(A,B,C,D)
 		temp=[temp t4];
 	end
 
-	if ntemp==n
-		t3=[];
-	else
-		F=qr(temp,Val(true));
-		t3=F.Q[:,ntemp+1:n];
-	end
-
+	# temp is [t1 t2 t4]
+	F=mqr(temp);
+	t3=F.V;
+	# if ntemp==n
+	# 	t3=[];
+	# else
+	# 	F=qr(temp,Val(true));
+	# 	t3=F.Q[:,ntemp+1:n];
+	# end
 
 	if length(t1)>0
 		T=t1;
