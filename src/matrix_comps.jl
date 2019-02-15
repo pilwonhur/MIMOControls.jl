@@ -15,7 +15,7 @@ function kalmandecomp(A,B,C,D)
 	if n!=n1
 		error("Matrix C should have the same number of columns as the number of states.")
 	end
-	m1,r1=size(D);
+	m1,r1=size(hcat(D));
 	if m!=m1
 		error("Matrix D should have the same number of rows as the number of outputs.")
 	end
