@@ -35,6 +35,7 @@ function kalmandecomp(A,B,C,D)
 		uncont_subspace=F.Q[:,nc+1:n];
 	else
 		uncont_subspace=[];
+	end
 
 	# orthogonal observable subspace
 	F=qr(Wo');
@@ -43,6 +44,7 @@ function kalmandecomp(A,B,C,D)
 		unobsv_subspace=F.Q[:,no+1:n];
 	else
 		unobsv_subspace=[];
+	end
 
 	# controllable and unobservable subspace
 	Proj_contsubspace=cont_subspace*inv(cont_subspace'*cont_subspace)*cont_subspace';
