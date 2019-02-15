@@ -58,23 +58,28 @@ function kalmandecomp(A,B,C,D)
 	t4=[];
 	if no<n 	# if unobservable subspace exists
 		coord1=nullspace((I-Proj_contsubspace)*unobsv_subspace);
-		if length(coord1)>0
+		if length(coord1)>0		# if t2 has elements
 			ncontunobs,=reverse(size(coord1));
 			t2=zeros(n,ncontunobs);
 			[t2[:,i]=unobsv_subspace*coord1[:,i] for i=1:ncontunobs];
 
 			if ncontunobs<n-no
 				F=qr([t2 unobsv_subspace]);
-				t4=F.Q[:ncontunobs+1:n-no];
+				t4=F.Q[:,ncontunobs+1:n-no];
 			end
 
 			if ncontunobs==nc
 				t1=[];
 			else
 				F=qr([t2 cont_subspace]);
-				t1=F.Q[:,no+1:nc];
+				t1=F.Q[:,ncontunobs+1:nc];
 			end
+		else 	# if t2 has no elements
+			t4=unobsv_subspace;
 		end
+
+
+
 	end
 
 	ntemp=0;
