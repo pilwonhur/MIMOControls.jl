@@ -5,6 +5,14 @@ mutable struct MQR
 	V::Any
 end
 
+mutable struct KALMANDECOMP
+	T::Any
+	t1::Any
+	t2::Any
+	t3::Any
+	t4::Any
+end
+
 
 function mqr(U;p=[])
 	# Author: Pilwon Hur, Ph.D.
@@ -207,5 +215,7 @@ function kalmandecomp(A,B,C,D)
 		end
 	end
 
-	return T
+	out=KALMANDECOMP(T,t1,t2,t3,t4)
+
+	return out
 end
