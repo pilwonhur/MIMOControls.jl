@@ -1,3 +1,48 @@
+function mqr(U;p=[])
+	# modified qr decomposition
+	# if m>=n, then it's the same as qr
+	# if m<n, then generic qr does not care of the column order of Q matrix
+	# mqr(U) will keep the column order of Q up to the level of rank.
+	# In other words, the first r columns of Q are orthonomal vectors for the Range(U)
+	# Within th Range(U), the order is not guaranteed to be the same as the column order of U.
+	# However, it tends to keep the order if possible.
+	# If you want to specify the order, then put the permutation information in p.
+	#
+	# Ex) mqr(U,p=[1,2])
+	# In this case, the first 2 columns of U will be applied to the first 2 columns of Q with the same order.
+	#
+	# Q,R,U,Uperp=mqr()
+	# where U=Q[1:r]
+
+
+	m,n=size(U);
+	r=rank(U);
+	if m>=n
+		F=qr(U)
+		if r<m
+			return F.Q, F.R, F.Q[:,1:r], F.Q[:,r+1:n]
+		else
+			return F.Q, F.R, F.Q[:,1:r], []
+		end
+	else 	# m<n
+		F=qr(U,Val(true));	# get the independent columns and it's permuation number
+
+		if length(p)==0	
+			pnew=sort(F.p[1:m])
+		else 	# when the permuation vector is provided
+			pleft=setdiff(F.p,p);
+			pleft=pleft[1:m-length(p)];
+			pnew=vcat(p[:],pleft[:])
+		end
+		F=qr(U[:,pnew])
+		if r<m
+			return F.Q, (F.Q)'*U, F.Q[:,1:r], F.Q[:,r+1:m]
+		else
+			return F.Q, (F.Q)'*U, F.Q[:,1:r], []
+		end
+	end
+end
+
 function findprojector(U)
 	# Input: a matrix U with independent basis column vectors
 	# Output: returns a projector onto the range space of U
@@ -67,7 +112,7 @@ function kalmandecomp(A,B,C,D)
 	end
 
 	# controllable and unobservable subspace
-	Proj_contsubspace=cont_subspace*inv(cont_subspace'*cont_subspace)*cont_subspace';
+	Proj_contsubspace=findprojector(cont_subspace);
 	t2=[];
 	t1=cont_subspace;	
 	t4=[];
