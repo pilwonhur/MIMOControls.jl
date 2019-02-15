@@ -34,7 +34,9 @@ function kalmandecomp(A,B,C,D)
 	no=rank(Wo);
 
 	# orthogonal controllable subspace
-	F=qr(Wc);
+	# https://blogs.mathworks.com/cleve/2016/07/25/compare-gram-schmidt-and-householder-orthogonalization-algorithms/
+	# household based qr is not what I wanted. The order is totally different
+	F=qr(Wc,Val(true));
 	cont_subspace=F.Q[:,1:nc];
 	if nc<n
 		uncont_subspace=F.Q[:,nc+1:n];
@@ -43,7 +45,7 @@ function kalmandecomp(A,B,C,D)
 	end
 
 	# orthogonal observable subspace
-	F=qr(Wo');
+	F=qr(Wo',Val(true));
 	obsv_subspace=F.Q[:,1:no];
 	if no<n
 		unobsv_subspace=F.Q[:,no+1:n];
@@ -64,14 +66,14 @@ function kalmandecomp(A,B,C,D)
 			[t2[:,i]=unobsv_subspace*coord1[:,i] for i=1:ncontunobs];
 
 			if ncontunobs<n-no
-				F=qr([t2 unobsv_subspace]);
+				F=qr([t2 unobsv_subspace],Val(true));
 				t4=F.Q[:,ncontunobs+1:n-no];
 			end
 
 			if ncontunobs==nc
 				t1=[];
 			else
-				F=qr([t2 cont_subspace]);
+				F=qr([t2 cont_subspace],Val(true));
 				t1=F.Q[:,ncontunobs+1:nc];
 			end
 		else 	# if t2 has no elements
@@ -102,7 +104,7 @@ function kalmandecomp(A,B,C,D)
 	if ntemp==n
 		t3=[];
 	else
-		F=qr(temp);
+		F=qr(temp,Val(true));
 		t3=F.Q[:,ntemp+1:n];
 	end
 
