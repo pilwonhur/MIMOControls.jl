@@ -12,7 +12,8 @@ export	kalmandecomp,
 		mscl,
 		sbs,
 		abv,
-		daug
+		daug,
+		minimumreal
 
 
 

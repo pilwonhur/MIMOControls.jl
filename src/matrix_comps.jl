@@ -220,6 +220,26 @@ function kalmandecomp(A,B,C,D)
 	return out
 end
 
+function kalmandecomp(G::StateSpace)
+	return kalmandecomp(G.A,G.B,G.C,G.D)
+end
+
+function minimumreal(G::StateSpace)
+	T=kalmandecomp(G);
+	n,=reverse(size(T.t1));
+	At=T.T\G.A*T.T;
+	Bt=T.T\G.B;
+	Ct=G.C*T.T;
+	Dt=D;
+	A1=At[1:n,1:n];
+	B1=Bt[1:n,:];
+	C1=Ct[:,1:n];
+	D1=Dt;
+	return ss(A1,B1,C1,D1)
+end
+
+
+
 function mmult(G1::StateSpace,G2::StateSpace)
 	# Author: Pilwon Hur, Ph.D.
 	#
@@ -293,6 +313,11 @@ function minv(G::StateSpace)
 	#
 	# returns G~
 	# G: state space model of G
+
+	n,=size(G.D)
+	if rank(G.D)<n
+		error("D matrix is not invertiable! inv(G) does not exist!")
+	end
 
 	A=G.A-G.B*G.D\G.C;
 	B=-G.B*inv(G.D);
