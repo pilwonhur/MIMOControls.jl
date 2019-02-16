@@ -230,7 +230,7 @@ function minimumreal(G::StateSpace)
 	At=T.T\G.A*T.T;
 	Bt=T.T\G.B;
 	Ct=G.C*T.T;
-	Dt=D;
+	Dt=G.D;
 	A1=At[1:n,1:n];
 	B1=Bt[1:n,:];
 	C1=Ct[:,1:n];
