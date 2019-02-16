@@ -14,7 +14,8 @@ export	kalmandecomp,
 		abv,
 		daug,
 		minimumreal,
-		eye
+		eye,
+		hinflmi
 
 
 
