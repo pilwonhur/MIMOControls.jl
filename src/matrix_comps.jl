@@ -400,7 +400,10 @@ end
 
 function hinflmi(G::StateSpace)
 	# Author: Pilwon Hur, Ph.D.
-	#
+	# 
+	# Accepts the G, state space model
+	# returns gamma and P using LMI
+
 	A=G.A;
 	B=G.B;
 	C=G.C;
@@ -417,4 +420,27 @@ function hinflmi(G::StateSpace)
 	JuMP.solve(m)
 
 	return sqrt(getvalue(g2)), getvalue(X)
+end
+
+function h2lmi(G::StateSpace)
+	# Author: Pilwon Hur, Ph.D.
+	# 
+	# Accepts the G, state space model
+	# returns gamma and P using LMI
+	# http://www.juliaopt.org/JuMP.jl/stable/refmodel.html
+	
+	A=G.A;
+	B=G.B;
+	C=G.C;
+	D=G.D;
+	n,=size(A);
+	
+	solver=SCSSolver(eps=1e-6,max_iters=100000,verbose=0)
+	m=Model(solver=solver)
+	@variable(m,X[1:n,1:n],SDP) 	# symmetric positive semidefinite
+	@objective(m,Min,tr(B'*X*P))
+	@SDconstraint(m,A*X+X*A'+C'*C<=eps()*eye(n))
+	JuMP.solve(m)
+
+	return getobjectivevalue(m), getvalue(X)
 end
