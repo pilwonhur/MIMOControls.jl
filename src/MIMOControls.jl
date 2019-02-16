@@ -13,11 +13,12 @@ export	kalmandecomp,
 		sbs,
 		abv,
 		daug,
-		minimumreal
+		minimumreal,
+		eye
 
 
 
-using ControlSystems, LinearAlgebra
+using JuMP, SCS, ControlSystems, LinearAlgebra
 
 include("matrix_comps.jl")
 end # module

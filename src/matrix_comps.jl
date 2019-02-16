@@ -221,10 +221,16 @@ function kalmandecomp(A,B,C,D)
 end
 
 function kalmandecomp(G::StateSpace)
+	# Author: Pilwon Hur, Ph.D.
+	#
+
 	return kalmandecomp(G.A,G.B,G.C,G.D)
 end
 
 function minimumreal(G::StateSpace)
+	# Author: Pilwon Hur, Ph.D.
+	#
+
 	T=kalmandecomp(G);
 	n,=reverse(size(T.t1));
 	At=T.T\G.A*T.T;
@@ -384,4 +390,31 @@ function daug(G1::StateSpace,G2::StateSpace)
 	C=[G1.C zeros(m1,n2);zeros(m2,n1) G2.C];
 	D=[G1.D zeros(m1,r2);zeros(m2,r1) G2.D];
 	return ss(A,B,C,D)
+end
+
+function eye(n)
+	# Author: Pilwon Hur, Ph.D.
+	#
+	return Matrix{Float64}(I, n, n)
+end
+
+function hinflmi(G::StateSpace)
+	# Author: Pilwon Hur, Ph.D.
+	#
+	A=G.A;
+	B=G.B;
+	C=G.C;
+	D=G.D;
+	n1,=size(A);
+	n2,=reverse(size(B));
+
+	solver=SCSSolver(eps=1e-6,max_iters=100000)
+	m=Model(solver=solver)
+	@variable(m,g2)
+	@variable(m,X[1:n1,1:n1],SDP) 	# symmetric positive semidefinite
+	@objective(m,Min,g2)
+	@SDconstraint(m,[A'*X+X*A+C'*C X*B+C'*D;(X*B+C'*D)' D'*D-g2*eye(n2)]<=eps()*eye(n1+n2))
+	JuMP.solve(m)
+
+	return sqrt(getvalue(g2)), getvalue(X)
 end
