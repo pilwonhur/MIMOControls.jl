@@ -29,7 +29,7 @@ function mqr(U;p=[])
 	# Ex) mqr(U,p=[1,2])
 	# In this case, the first 2 columns of U will be applied to the first 2 columns of Q with the same order.
 	#
-	# out=mqr()
+	# out=mqr(U)
 	# out.Q, out.R, out.U, out.V
 	# where out.U=Q[1:r]
 	# out.V=out.U perp
@@ -218,4 +218,145 @@ function kalmandecomp(A,B,C,D)
 	out=KALMANDECOMP(T,t1,t2,t3,t4)
 
 	return out
+end
+
+function mmult(G1::StateSpace,G2::StateSpace)
+	# Author: Pilwon Hur, Ph.D.
+	#
+	# returns G1*G2
+	# G1: state space model of G1
+	# G2: state space model of G2
+
+	n1,=size(G1.A);
+	n2,=size(G2.A);
+	A=[G1.A G1.B*G2.C;zeros(n2,n1) G2.A];
+	B=[G1.B*G2.D;G2.B];
+	C=[G1.C G1.D*G2.C];
+	D=G1.D*G2.D;
+	return ss(A,B,C,D)
+end
+
+function madd(G1::StateSpace,G2::StateSpace)
+	# Author: Pilwon Hur, Ph.D.
+	#
+	# returns G1+G2
+	# G1: state space model of G1
+	# G2: state space model of G2
+
+	n1,=size(G1.A);
+	n2,=size(G2.A);
+	A=[G1.A zeros(n1,n2);zeros(n2,n1) G2.A];
+	B=[G1.B;G2.B];
+	C=[G1.C G2.C];
+	D=G1.D+G2.D;
+	return ss(A,B,C,D)
+end
+
+function msub(G1::StateSpace,G2::StateSpace)
+	# Author: Pilwon Hur, Ph.D.
+	#
+	# returns G1-G2
+	# G1: state space model of G1
+	# G2: state space model of G2
+
+	return madd(G1,-G2)	# note that -G2 automatically handles flipping sign of C and D.
+end
+
+function transp(G::StateSpace)
+	# Author: Pilwon Hur, Ph.D.
+	#
+	# returns G'
+	# G: state space model of G
+
+	A=G.A';
+	B=G.C';
+	C=G.B';
+	D=G.D';
+	return ss(A,B,C,D)
+end
+
+function cjt(G::StateSpace)
+	# Author: Pilwon Hur, Ph.D.
+	#
+	# returns G~
+	# G: state space model of G
+
+	A=-G.A';
+	B=-G.C';
+	C=G.B';
+	D=G.D';
+	return ss(A,B,C,D)
+end
+
+function minv(G::StateSpace)
+	# Author: Pilwon Hur, Ph.D.
+	#
+	# returns G~
+	# G: state space model of G
+
+	A=G.A-G.B*G.D\G.C;
+	B=-G.B*inv(G.D);
+	C=G.D\G.C;
+	D=inv(G.D);
+	return ss(A,B,C,D)
+end
+
+function mscl(G::StateSpace,alpha)
+	# Author: Pilwon Hur, Ph.D.
+	#
+	# returns alpha*G
+	# G: state space model of G
+	# alpha: scalar
+
+	return alpha*G
+end
+
+function sbs(G1::StateSpace,G2::StateSpace)
+	# Author: Pilwon Hur, Ph.D.
+	#
+	# returns [G1 G2]
+	# G1: state space model of G1
+	# G2: state space model of G2
+
+	# n1,=size(G1.A);
+	# n2,=size(G2.A);
+	# r1,=reverse(size(G1.B));
+	# r2,=reverse(size(G2.B));
+	# A=[G1.A zeros(n1,n2);zeros(n2,n1) G2.A];
+	# B=[G1.B zeros(n1,r2);zeros(n2,r1) G2.B];
+	# C=[G1.C G2.C];
+	# D=[G1.D G2.D];
+	return [G1 G2]
+end
+
+function abv(G1::StateSpace,G2::StateSpace)
+	# Author: Pilwon Hur, Ph.D.
+	#
+	# returns [G1]
+	#         [G2]
+	# G1: state space model of G1
+	# G2: state space model of G2
+
+	return [G1;G2]
+end
+
+function daug(G1::StateSpace,G2::StateSpace)
+	# Author: Pilwon Hur, Ph.D.
+	#
+	# returns [G1  0]
+	#         [0  G2]
+	# G1: state space model of G1
+	# G2: state space model of G2
+
+	n1,=size(G1.A);
+	n2,=size(G2.A);
+	r1,=reverse(size(G1.B));
+	r2,=reverse(size(G2.B));
+	m1,=size(G1.C);
+	m2,=size(G2.C);
+	A=[G1.A zeros(n1,n2);zeros(n2,n1) G2.A];
+	B=[G1.B zeros(n1,r2);zeros(n2,r1) G2.B];
+	C=[G1.C zeros(m1,n2);zeros(m2,n1) G2.C];
+	D=[G1.D zeros(m1,r2);zeros(m2,r1) G2.D];
+	return ss(A,B,C,D)
 end

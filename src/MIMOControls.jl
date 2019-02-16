@@ -2,7 +2,19 @@ module MIMOControls
 
 export	kalmandecomp,
 		findprojector,
-		mqr
+		mqr,
+		mmult,
+		madd,
+		msub,
+		transp,
+		cjt,
+		minv,
+		mscl,
+		sbs,
+		abv,
+		daug
+
+
 
 using ControlSystems, LinearAlgebra
 
