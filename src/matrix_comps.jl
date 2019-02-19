@@ -147,6 +147,8 @@ function kalmandecomp(A,B,C,D)
 		# if fully controllable
 		if norm(Proj_uncontsubspace)<eps()*1000000;
 			t2=unobsv_subspace;
+			F=mqr([t2 cont_subspace],p=(1:size(t2)[2]));
+			t1=F.U[:,size(t2)[2]+1:n];
 		else # if not fully controllable
 			coord1=nullspace(Proj_uncontsubspace*unobsv_subspace);
 
@@ -156,14 +158,14 @@ function kalmandecomp(A,B,C,D)
 				t2=zeros(n,ncontunobs);
 				[t2[:,i]=unobsv_subspace*coord1[:,i] for i=1:ncontunobs];
 
-				F=mqr([t2 unobsv_subspace],p=(1:length(t2)));	# F.U will return orthonormal basis for unobservable subspace
+				F=mqr([t2 unobsv_subspace],p=(1:size(t2)[2]));	# F.U will return orthonormal basis for unobservable subspace
 				t4=F.U[:,ncontunobs+1:n-no]
 
 				if ncontunobs==nc
 					t1=[];
 				else
 					# F=qr([t2 cont_subspace],Val(true));
-					F=mqr([t2 cont_subspace],p=(1:length(t2)));
+					F=mqr([t2 cont_subspace],p=(1:size(t2)[2]));
 					t1=F.U[:,ncontunobs+1:nc];
 				end
 			else 	# if t2 has no elements
