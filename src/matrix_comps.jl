@@ -14,27 +14,27 @@ mutable struct KALMANDECOMP
 end
 
 
+"""`out=mqr(U;p=[])`
+
+Author: Pilwon Hur, Ph.D.
+
+Modified qr decomposition
+if m>=n, then it's the same as qr
+if m<n, then generic qr does not care of the column order of Q matrix
+mqr(U) will keep the column order of Q up to the level of rank.
+In other words, the first r columns of Q are orthonomal vectors for the Range(U)
+Within th Range(U), the order is not guaranteed to be the same as the column order of U.
+However, it tends to keep the order if possible.
+If you want to specify the order, then put the permutation information in p.
+
+Ex) `mqr(U,p=[1,2])`
+In this case, the first 2 columns of U will be applied to the first 2 columns of Q with the same order.
+
+`out=mqr(U)`
+`out.Q, out.R, out.U, out.V`
+where `out.U=Q[1:r]`, `out.V=out.U perp`
+"""
 function mqr(U;p=[])
-	# Author: Pilwon Hur, Ph.D.
-	#
-	# modified qr decomposition
-	# if m>=n, then it's the same as qr
-	# if m<n, then generic qr does not care of the column order of Q matrix
-	# mqr(U) will keep the column order of Q up to the level of rank.
-	# In other words, the first r columns of Q are orthonomal vectors for the Range(U)
-	# Within th Range(U), the order is not guaranteed to be the same as the column order of U.
-	# However, it tends to keep the order if possible.
-	# If you want to specify the order, then put the permutation information in p.
-	#
-	# Ex) mqr(U,p=[1,2])
-	# In this case, the first 2 columns of U will be applied to the first 2 columns of Q with the same order.
-	#
-	# out=mqr(U)
-	# out.Q, out.R, out.U, out.V
-	# where out.U=Q[1:r]
-	# out.V=out.U perp
-
-
 	m,n=size(U);
 	r=rank(U);
 	if m>=n
@@ -65,13 +65,15 @@ function mqr(U;p=[])
 	end
 end
 
-function findprojector(U)
-	# Author: Pilwon Hur, Ph.D.
-	#
-	# Input: a matrix U with independent basis column vectors
-	# Output: returns a projector onto the range space of U
+"""`Proj=findprojector(U)`
+Author: Pilwon Hur, Ph.D.
 
-	# the following is a treatment for the case when U contains dependent vectors
+Input: a matrix U with independent basis column vectors
+Output: returns a projector onto the range space of U
+
+the following is a treatment for the case when U contains dependent vectors
+"""
+function findprojector(U)
 	m,=size(U)
 
 	F=mqr(U);
@@ -83,6 +85,19 @@ function findprojector(U)
 	return V*inv(V'*V)*V';
 end
 
+"""`T=kalmandecomp(A,B,C,D)`
+	`T=kalmandecomp(G::StateSpace)`
+	`T=kalmandecomp(G::TransferFunction)`
+
+Author: Pilwon Hur, Ph.D.
+
+Returns the Kalman decomposition.
+`T.T`: transform matrix
+`T.t1`: basis for controllable and observable subspace
+`T.t2`: basis for controllable and unobservable subspace
+`T.t3`: basis for uncontrollable and observable subspace
+`T.t4`: basis for uncontrollable and unobservable subspace
+"""
 function kalmandecomp(A,B,C,D)
 	# Author: Pilwon Hur, Ph.D.
 	#
@@ -232,10 +247,23 @@ end
 function kalmandecomp(G::StateSpace)
 	# Author: Pilwon Hur, Ph.D.
 	#
-
 	return kalmandecomp(G.A,G.B,G.C,G.D)
 end
 
+function kalmandecomp(G::TransferFunction)
+	# Author: Pilwon Hur, Ph.D.
+	#
+	return kalmandecomp(ss(G))
+end
+
+"""`Gs=minimumreal(G::StateSpace)`
+	`Gs=minimumreal(G::TransferFunction)`
+
+Author: Pilwon Hur, Ph.D.
+
+Returns the Kalman decomposition.
+`Gs`: minimum state space realization of the given system.
+"""
 function minimumreal(G::StateSpace)
 	# Author: Pilwon Hur, Ph.D.
 	#
@@ -253,8 +281,20 @@ function minimumreal(G::StateSpace)
 	return ss(A1,B1,C1,D1)
 end
 
+function minimumreal(G::TransferFunction)
+	# Author: Pilwon Hur, Ph.D.
+	#
+	return minimumreal(ss(G))
+end
 
 
+"""`Gs=mmult(G1::StateSpace,G2::StateSpace)`
+Author: Pilwon Hur, Ph.D.
+
+returns state space realization of `G1*G2`
+`G1`: state space model of `G1`
+`G2`: state space model of `G2`
+"""
 function mmult(G1::StateSpace,G2::StateSpace)
 	# Author: Pilwon Hur, Ph.D.
 	#
@@ -271,6 +311,13 @@ function mmult(G1::StateSpace,G2::StateSpace)
 	return ss(A,B,C,D)
 end
 
+"""`Gs=madd(G1::StateSpace,G2::StateSpace)`
+Author: Pilwon Hur, Ph.D.
+
+returns state space realization of `G1+G2`
+`G1`: state space model of `G1`
+`G2`: state space model of `G2`
+"""
 function madd(G1::StateSpace,G2::StateSpace)
 	# Author: Pilwon Hur, Ph.D.
 	#
@@ -287,6 +334,13 @@ function madd(G1::StateSpace,G2::StateSpace)
 	return ss(A,B,C,D)
 end
 
+"""`Gs=msub(G1::StateSpace,G2::StateSpace)`
+Author: Pilwon Hur, Ph.D.
+
+returns state space realization of `G1-G2`
+`G1`: state space model of `G1`
+`G2`: state space model of `G2`
+"""
 function msub(G1::StateSpace,G2::StateSpace)
 	# Author: Pilwon Hur, Ph.D.
 	#
@@ -297,6 +351,12 @@ function msub(G1::StateSpace,G2::StateSpace)
 	return madd(G1,-G2)	# note that -G2 automatically handles flipping sign of C and D.
 end
 
+"""`Gs=transp(G::StateSpace)`
+Author: Pilwon Hur, Ph.D.
+
+returns state space realization of `G'`
+`G`: state space model of `G`
+"""
 function transp(G::StateSpace)
 	# Author: Pilwon Hur, Ph.D.
 	#
@@ -310,6 +370,12 @@ function transp(G::StateSpace)
 	return ss(A,B,C,D)
 end
 
+"""`Gs=cjt(G::StateSpace)`
+Author: Pilwon Hur, Ph.D.
+
+returns state space realization of `G~`
+`G`: state space model of `G`
+"""
 function cjt(G::StateSpace)
 	# Author: Pilwon Hur, Ph.D.
 	#
@@ -323,6 +389,12 @@ function cjt(G::StateSpace)
 	return ss(A,B,C,D)
 end
 
+"""`Gs=minv(G::StateSpace)`
+Author: Pilwon Hur, Ph.D.
+
+returns state space realization of `inv(G)`
+`G`: state space model of `G`
+"""
 function minv(G::StateSpace)
 	# Author: Pilwon Hur, Ph.D.
 	#
@@ -341,6 +413,12 @@ function minv(G::StateSpace)
 	return ss(A,B,C,D)
 end
 
+"""`Gs=mscl(G::StateSpace,alpha)`
+Author: Pilwon Hur, Ph.D.
+
+returns state space realization of `alpha*G`
+`G`: state space model of `G`
+"""
 function mscl(G::StateSpace,alpha)
 	# Author: Pilwon Hur, Ph.D.
 	#
@@ -351,6 +429,13 @@ function mscl(G::StateSpace,alpha)
 	return alpha*G
 end
 
+"""`Gs=sbs(G1::StateSpace,G2::StateSpace)`
+Author: Pilwon Hur, Ph.D.
+
+returns state space realization of `[G1 G2]`
+`G1`: state space model of `G1`
+`G2`: state space model of `G2`
+"""
 function sbs(G1::StateSpace,G2::StateSpace)
 	# Author: Pilwon Hur, Ph.D.
 	#
@@ -369,6 +454,14 @@ function sbs(G1::StateSpace,G2::StateSpace)
 	return [G1 G2]
 end
 
+"""`Gs=abv(G1::StateSpace,G2::StateSpace)`
+Author: Pilwon Hur, Ph.D.
+
+returns state space realization of `[G1]`
+								   `[G2]`
+`G1`: state space model of `G1`
+`G2`: state space model of `G2`
+"""
 function abv(G1::StateSpace,G2::StateSpace)
 	# Author: Pilwon Hur, Ph.D.
 	#
@@ -380,6 +473,14 @@ function abv(G1::StateSpace,G2::StateSpace)
 	return [G1;G2]
 end
 
+"""`Gs=daug(G1::StateSpace,G2::StateSpace)`
+Author: Pilwon Hur, Ph.D.
+
+returns state space realization of `[G1  0]`
+								   `[0  G2]`
+`G1`: state space model of `G1`
+`G2`: state space model of `G2`
+"""
 function daug(G1::StateSpace,G2::StateSpace)
 	# Author: Pilwon Hur, Ph.D.
 	#
@@ -401,12 +502,23 @@ function daug(G1::StateSpace,G2::StateSpace)
 	return ss(A,B,C,D)
 end
 
+"""`I=eye(n)`
+Author: Pilwon Hur, Ph.D.
+
+returns nxn identity matrix
+"""
 function eye(n)
 	# Author: Pilwon Hur, Ph.D.
 	#
 	return Matrix{Float64}(I, n, n)
 end
 
+"""`Gs=hinflmi(G::StateSpace)`
+Author: Pilwon Hur, Ph.D.
+
+returns hinf norm of the given system
+`G`: state space model of `G`
+"""
 function hinflmi(G::StateSpace)
 	# Author: Pilwon Hur, Ph.D.
 	# 
@@ -431,6 +543,12 @@ function hinflmi(G::StateSpace)
 	return sqrt(getvalue(g2)), getvalue(X)
 end
 
+"""`Gs=h2lmi(G::StateSpace)`
+Author: Pilwon Hur, Ph.D.
+
+returns h2 norm of the given system
+`G`: state space model of `G`
+"""
 function h2lmi(G::StateSpace)
 	# Author: Pilwon Hur, Ph.D.
 	# 
