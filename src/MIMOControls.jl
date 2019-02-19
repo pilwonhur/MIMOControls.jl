@@ -15,7 +15,8 @@ export	kalmandecomp,
 		daug,
 		minimumreal,
 		eye,
-		hinflmi
+		hinflmi,
+		h2lmi
 
 
 

@@ -142,26 +142,33 @@ function kalmandecomp(A,B,C,D)
 
 	# find controllable/unobservable and uncontrollable/unobservable subspaces if unobservable subspace exists
 	if no<n
-		coord1=nullspace((I-Proj_contsubspace)*unobsv_subspace);
+		Proj_uncontsubspace=I-Proj_contsubspace;
 
-		# controllable/unobservable subspace
-		if length(coord1)>0		# if t2 has elements
-			ncontunobs,=reverse(size(coord1));
-			t2=zeros(n,ncontunobs);
-			[t2[:,i]=unobsv_subspace*coord1[:,i] for i=1:ncontunobs];
+		# if fully controllable
+		if norm(Proj_uncontsubspace)<eps()*1000000;
+			t2=unobsv_subspace;
+		else # if not fully controllable
+			coord1=nullspace(Proj_uncontsubspace*unobsv_subspace);
 
-			F=mqr([t2 unobsv_subspace],p=(1:length(t2)));	# F.U will return orthonormal basis for unobservable subspace
-			t4=F.U[:,ncontunobs+1:n-no]
+			# controllable/unobservable subspace
+			if length(coord1)>0		# if t2 has elements
+				ncontunobs,=reverse(size(coord1));
+				t2=zeros(n,ncontunobs);
+				[t2[:,i]=unobsv_subspace*coord1[:,i] for i=1:ncontunobs];
 
-			if ncontunobs==nc
-				t1=[];
-			else
-				# F=qr([t2 cont_subspace],Val(true));
-				F=mqr([t2 cont_subspace],p=(1:length(t2)));
-				t1=F.U[:,ncontunobs+1:nc];
+				F=mqr([t2 unobsv_subspace],p=(1:length(t2)));	# F.U will return orthonormal basis for unobservable subspace
+				t4=F.U[:,ncontunobs+1:n-no]
+
+				if ncontunobs==nc
+					t1=[];
+				else
+					# F=qr([t2 cont_subspace],Val(true));
+					F=mqr([t2 cont_subspace],p=(1:length(t2)));
+					t1=F.U[:,ncontunobs+1:nc];
+				end
+			else 	# if t2 has no elements
+				t4=unobsv_subspace;
 			end
-		else 	# if t2 has no elements
-			t4=unobsv_subspace;
 		end
 	end
 
@@ -438,7 +445,7 @@ function h2lmi(G::StateSpace)
 	solver=SCSSolver(eps=1e-6,max_iters=100000,verbose=0)
 	m=Model(solver=solver)
 	@variable(m,X[1:n,1:n],SDP) 	# symmetric positive semidefinite
-	@objective(m,Min,tr(B'*X*P))
+	@objective(m,Min,tr(B'*X*B))
 	@SDconstraint(m,A*X+X*A'+C'*C<=eps()*eye(n))
 	JuMP.solve(m)
 
