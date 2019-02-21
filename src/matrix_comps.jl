@@ -596,11 +596,11 @@ end
 function splitSS(G::StateSpace)
 	Gmin=minimumreal(G);
 	d,v=eigen(Gmin.A);
-	dreal=sortperm(real(d));
+	dreal=real(d);
 	p=sortperm(dreal);
-	ps=(1:length(p))[p.<0];
-	pu=(1:length(p))[p.>0];
-	pc=(1:length(p))[p.==0];
+	ps=(1:length(dreal))[dreal.<0];
+	pu=(1:length(dreal))[dreal.>0];
+	pc=(1:length(dreal))[dreal.==0];
 	Anew=diagm(0=>d);
 	Bnew=inv(v)*Gmin.B;
 	Cnew=Gmin.C*v;
