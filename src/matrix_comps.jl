@@ -614,22 +614,44 @@ function h2lmi(G::StateSpace)
 	return sqrt(getobjectivevalue(m)), getvalue(X)
 end
 
+function complex2real(A)
+	# Convert complex eigendecomposition of real matrix
+	# into eigen-like decomposition with real block matrices
+	d,v=eigen(A);
+	n=length(d);
+	T=eye(n);
+	if !isreal(d)
+		for i=1:n
+			if !isreal(d[i]) && i<n
+				if norm(d[i]-conj(d[i+1]))<eps()*1000
+					T[i,i]=T[i+1,i]=0.5;
+					T[i,i+1]=-0.5im;
+					T[i+1,i+1]=0.5im;
+				end
+			end
+		end
+	end
+end
 
 function splitSS(G::StateSpace)
 	Gmin=minimumreal(G);
 	d,v=eigen(Gmin.A);
-	dreal=real(d);
-	p=sortperm(dreal);
-	ps=(1:length(dreal))[dreal.<0];
-	pu=(1:length(dreal))[dreal.>0];
-	pc=(1:length(dreal))[dreal.==0];
-	Anew=diagm(0=>d);
-	Bnew=inv(v)*Gmin.B;
-	Cnew=Gmin.C*v;
-	Dnew=Gmin.D;
-	Gs=ss(Anew[ps,ps],Bnew[ps,:],Cnew[:,ps],zeros(size(Dnew)));
-	Gu=ss(Anew[pu,pu],Bnew[pu,:],Cnew[:,pu],zeros(size(Dnew)));
-	Gc=ss(Anew[pc,pc],Bnew[pc,:],Cnew[:,pc],Dnew);
+	if isreal(d)
+		dreal=real(d);
+		p=sortperm(dreal);
+		ps=(1:length(dreal))[dreal.<0];
+		pu=(1:length(dreal))[dreal.>0];
+		pc=(1:length(dreal))[dreal.==0];
+		Anew=diagm(0=>d);
+		Bnew=inv(v)*Gmin.B;
+		Cnew=Gmin.C*v;
+		Dnew=Gmin.D;
+		Gs=ss(Anew[ps,ps],Bnew[ps,:],Cnew[:,ps],zeros(size(Dnew)));
+		Gu=ss(Anew[pu,pu],Bnew[pu,:],Cnew[:,pu],zeros(size(Dnew)));
+		Gc=ss(Anew[pc,pc],Bnew[pc,:],Cnew[:,pc],Dnew);
+	else 	# if complex
+
+	end 
 	out=SPLITSS(Gs,Gu,Gc);
 	return out;
 end
