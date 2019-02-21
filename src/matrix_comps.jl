@@ -605,8 +605,8 @@ function splitSS(G::StateSpace)
 	Bnew=inv(v)*Gmin.B;
 	Cnew=Gmin.C*v;
 	Dnew=Gmin.D;
-	Gs=ss(Anew[ps,ps],Bnew[ps,:],Cnew[:,ps],Dnew);
-	Gu=ss(Anew[pu,pu],Bnew[pu,:],Cnew[:,pu],Dnew);
+	Gs=ss(Anew[ps,ps],Bnew[ps,:],Cnew[:,ps],zeros(size(Dnew)));
+	Gu=ss(Anew[pu,pu],Bnew[pu,:],Cnew[:,pu],zeros(size(Dnew)));
 	Gc=ss(Anew[pc,pc],Bnew[pc,:],Cnew[:,pc],Dnew);
 	out=SPLITSS(Gs,Gu,Gc);
 	return out;
