@@ -409,6 +409,28 @@ function cjt(G::StateSpace)
 	return ss(A,B,C,D)
 end
 
+
+"""`Gs=cj(G::StateSpace)`
+Author: Pilwon Hur, Ph.D.
+
+returns state space realization of `G(-s)`
+`G`: state space model of `G`
+"""
+function cj(G::StateSpace)
+	# Author: Pilwon Hur, Ph.D.
+	#
+	# returns G~
+	# G: state space model of G
+
+	A=-G.A;
+	B=-G.B;
+	C=G.C;
+	D=G.D;
+	return ss(A,B,C,D)
+end
+
+
+
 """`Gs=minv(G::StateSpace)`
 Author: Pilwon Hur, Ph.D.
 
