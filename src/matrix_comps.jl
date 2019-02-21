@@ -631,6 +631,7 @@ function complex2real(A)
 			end
 		end
 	end
+	return T;
 end
 
 function splitSS(G::StateSpace)
@@ -655,3 +656,7 @@ function splitSS(G::StateSpace)
 	out=SPLITSS(Gs,Gu,Gc);
 	return out;
 end
+
+
+
+
