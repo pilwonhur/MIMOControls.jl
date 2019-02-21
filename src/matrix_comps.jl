@@ -630,8 +630,8 @@ function complex2real(A)
 	# into eigen-like decomposition with real block matrices
 	d,v=eigen(A);
 	n=length(d);
-	T=eye(n);
 	if !isreal(d)
+		T=eyec(n);
 		for i=1:n
 			if !isreal(d[i]) && i<n
 				if norm(d[i]-conj(d[i+1]))<eps()*1000
@@ -641,6 +641,8 @@ function complex2real(A)
 				end
 			end
 		end
+	else
+		T=eye(n);
 	end
 	return T;
 end
