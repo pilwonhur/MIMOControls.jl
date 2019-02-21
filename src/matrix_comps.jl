@@ -555,6 +555,17 @@ function eye(n)
 	return Matrix{Float64}(I, n, n)
 end
 
+"""`I=eyec(n)`
+Author: Pilwon Hur, Ph.D.
+
+returns nxn complex identity matrix
+"""
+function eyec(n)
+	# Author: Pilwon Hur, Ph.D.
+	#
+	return Matrix{Complex{Float64}}(I, n, n)
+end
+
 """`Gs=hinflmi(G::StateSpace)`
 Author: Pilwon Hur, Ph.D.
 

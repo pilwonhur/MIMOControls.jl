@@ -16,9 +16,11 @@ export	kalmandecomp,
 		daug,
 		minimumreal,
 		eye,
+		eyec,
 		hinflmi,
 		h2lmi,
-		splitSS
+		splitSS,
+		complex2real
 
 
 
