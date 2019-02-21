@@ -16,7 +16,8 @@ export	kalmandecomp,
 		minimumreal,
 		eye,
 		hinflmi,
-		h2lmi
+		h2lmi,
+		splitSS
 
 
 

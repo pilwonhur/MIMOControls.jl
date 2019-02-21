@@ -13,26 +13,46 @@ mutable struct KALMANDECOMP
 	t4::Any
 end
 
+mutable struct SPLITSS 
+	Gs::Any
+	Gu::Any
+	Gc::Any
+end
+
 
 """`out=mqr(U;p=[])`
 
 Author: Pilwon Hur, Ph.D.
 
 Modified qr decomposition
-if m>=n, then it's the same as qr
-if m<n, then generic qr does not care of the column order of Q matrix
+
+If m>=n, then it's the same as qr()
+
+If m<n, then generic qr does not care of the column order of Q matrix
+
 mqr(U) will keep the column order of Q up to the level of rank.
+
 In other words, the first r columns of Q are orthonomal vectors for the Range(U)
+
 Within th Range(U), the order is not guaranteed to be the same as the column order of U.
+
 However, it tends to keep the order if possible.
+
 If you want to specify the order, then put the permutation information in p.
 
-Ex) `mqr(U,p=[1,2])`
-In this case, the first 2 columns of U will be applied to the first 2 columns of Q with the same order.
+Ex) 
+```julia 
+out=mqr(U,p=[1,2])
+out=mqr(U) # when you don't care about the order of the first 2 columns
+out.Q
+out.R
+out.U
+out.V
+```
 
-`out=mqr(U)`
-`out.Q, out.R, out.U, out.V`
 where `out.U=Q[1:r]`, `out.V=out.U perp`
+
+In this case, the first 2 columns of U will be applied to the first 2 columns of Q with the same order.
 """
 function mqr(U;p=[])
 	m,n=size(U);
@@ -570,4 +590,24 @@ function h2lmi(G::StateSpace)
 	JuMP.solve(m)
 
 	return getobjectivevalue(m), getvalue(X)
+end
+
+
+function splitSS(G::StateSpace)
+	Gmin=minimumreal(G);
+	d,v=eigen(Gmin.A);
+	dreal=sortperm(real(d));
+	p=sortperm(dreal);
+	ps=(1:length(p))[p.<0];
+	pu=(1:length(p))[p.>0];
+	pc=(1:length(p))[p.==0];
+	Anew=diagm(0=>d);
+	Bnew=inv(v)*Gmin.B;
+	Cnew=Gmin.C*v;
+	Dnew=Gmin.D;
+	Gs=ss(Anew[ps,ps],Bnew[ps,:],Cnew[:,ps],Dnew);
+	Gu=ss(Anew[pu,pu],Bnew[pu,:],Cnew[:,pu],Dnew);
+	Gc=ss(Anew[pc,pc],Bnew[pc,:],Cnew[:,pc],Dnew);
+	out=SPLITSS(Gs,Gu,Gc);
+	return out;
 end
