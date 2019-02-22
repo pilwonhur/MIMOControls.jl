@@ -284,6 +284,7 @@ end
 
 """`Gs=minimumreal(G::StateSpace)`
 	`Gs=minimumreal(G::TransferFunction)`
+	`Gs=minimumreal(A,B,C,D)`
 
 Author: Pilwon Hur, Ph.D.
 
@@ -311,6 +312,12 @@ function minimumreal(G::TransferFunction)
 	# Author: Pilwon Hur, Ph.D.
 	#
 	return minimumreal(ss(G))
+end
+
+function minimumreal(A,B,C,D)
+	# Author: Pilwon Hur, Ph.D.
+	#
+	return minimumreal(ss(A,B,C,D))
 end
 
 
