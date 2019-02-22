@@ -19,6 +19,12 @@ mutable struct SPLITSS
 	Gc::Any
 end
 
+mutable struct COMPLEX2REAL
+	T::Any	# transform matrix: A=V*D*Vinv=V*(T*Tinv)*D*(T*Tinv)*Vinv=(V*T)*(Tinv*D*T)*(V*T)inv
+	D::Any	# block diagonal matrix
+	V::Any	# matrix of eigenvectors
+end
+
 
 """`out=mqr(U;p=[])`
 
@@ -641,31 +647,46 @@ function complex2real(A)
 				end
 			end
 		end
+
+		# A=V*D*Vinv=V*(T*Tinv)*D*(T*Tinv)*Vinv=(V*T)*(Tinv*D*T)*(V*T)inv
+		D=inv(T)*diagm(0=>d)*T;
+		V=v*T;
 	else
 		T=eye(n);
 	end
-	return T;
+
+	out=COMPLEX2REAL(T,D,V);
+
+	return out;
 end
 
 function splitSS(G::StateSpace)
 	Gmin=minimumreal(G);
 	d,v=eigen(Gmin.A);
-	if isreal(d)
-		dreal=real(d);
-		p=sortperm(dreal);
-		ps=(1:length(dreal))[dreal.<0];
-		pu=(1:length(dreal))[dreal.>0];
-		pc=(1:length(dreal))[dreal.==0];
+	dreal=real(d);
+	# p=sortperm(dreal);
+	ps=(1:length(dreal))[dreal.<0];
+	pu=(1:length(dreal))[dreal.>0];
+	pc=(1:length(dreal))[dreal.==0];
+
+	if isreal(d)	
 		Anew=diagm(0=>d);
 		Bnew=inv(v)*Gmin.B;
 		Cnew=Gmin.C*v;
-		Dnew=Gmin.D;
-		Gs=ss(Anew[ps,ps],Bnew[ps,:],Cnew[:,ps],zeros(size(Dnew)));
-		Gu=ss(Anew[pu,pu],Bnew[pu,:],Cnew[:,pu],zeros(size(Dnew)));
-		Gc=ss(Anew[pc,pc],Bnew[pc,:],Cnew[:,pc],Dnew);
+		Dnew=Gmin.D;		
 	else 	# if complex
+		T=complex2real(A)
 
+		Anew=T.D;
+		Bnew=inv(T.V)*Gmin.B;
+		Cnew=Gmin.C*T.V;
+		Dnew=Gmin.D;		
 	end 
+
+	Gs=ss(Anew[ps,ps],Bnew[ps,:],Cnew[:,ps],zeros(size(Dnew)));
+	Gu=ss(Anew[pu,pu],Bnew[pu,:],Cnew[:,pu],zeros(size(Dnew)));
+	Gc=ss(Anew[pc,pc],Bnew[pc,:],Cnew[:,pc],Dnew);
+
 	out=SPLITSS(Gs,Gu,Gc);
 	return out;
 end
