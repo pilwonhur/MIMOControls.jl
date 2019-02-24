@@ -637,7 +637,7 @@ function h2lmi(G::StateSpace)
 	solver=SCSSolver(eps=1e-6,max_iters=100000,verbose=0)
 	m=Model(solver=solver)
 	@variable(m,X[1:n,1:n],SDP) 	# symmetric positive semidefinite
-	@objective(m,Min,tr(B'*X*B))
+	@objective(m,Min,tr(X))
 	@SDconstraint(m,A*X+X*A'+C'*C<=eps()*eye(n))
 	JuMP.solve(m)
 
