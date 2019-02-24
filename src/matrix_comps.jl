@@ -580,6 +580,7 @@ function eyec(n)
 end
 
 """`Gs=hinflmi(G::StateSpace)`
+	`Gs=hinflmi(G::TransferFunction)`
 Author: Pilwon Hur, Ph.D.
 
 returns hinf norm of the given system
@@ -614,6 +615,7 @@ function hinflmi(G::TransferFunction)
 end
 
 """`Gs=h2lmi(G::StateSpace)`
+	`Gs=h2lmi(G::TransferFunction)`
 Author: Pilwon Hur, Ph.D.
 
 returns h2 norm of the given system
@@ -646,7 +648,13 @@ function h2lmi(G::TransferFunction)
 	return h2lmi(ss(G))
 end
 
+"""`Gs=hinfbis(G::StateSpace)`
+	`Gs=hinfbis(G::TransferFunction)`
+Author: Pilwon Hur, Ph.D.
 
+returns hinf norm of the given system using Hamiltonian matrix and bisection
+`G`: state space model of `G`
+"""
 function hinfbis(G::StateSpace,rl,ru)
 	r=(ru+rl)/2
 	rprev=0;
@@ -675,6 +683,9 @@ function hinfbis(G::StateSpace,rl,ru)
 	return r
 end
 
+function hinfbis(G::TransferFunction,rl,ru)
+	return hinfbis(ss(G),rl,ru)
+end
 
 
 
