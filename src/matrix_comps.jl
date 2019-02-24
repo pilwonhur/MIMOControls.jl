@@ -641,7 +641,8 @@ function h2lmi(G::StateSpace)
 	@SDconstraint(m,A*X+X*A'+C'*C<=eps()*eye(n))
 	JuMP.solve(m)
 
-	return sqrt(getobjectivevalue(m)), getvalue(X)
+	# return sqrt(getobjectivevalue(m)), getvalue(X)
+	return sqrt(tr(B'*getvalue(X)*B)), getvalue(X)
 end
 
 function h2lmi(G::TransferFunction)
