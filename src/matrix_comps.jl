@@ -609,6 +609,10 @@ function hinflmi(G::StateSpace)
 	return sqrt(getvalue(g2)), getvalue(X)
 end
 
+function hinflmi(G::TransferFunction)
+	return hinflmi(ss(G))
+end
+
 """`Gs=h2lmi(G::StateSpace)`
 Author: Pilwon Hur, Ph.D.
 
@@ -636,6 +640,10 @@ function h2lmi(G::StateSpace)
 	JuMP.solve(m)
 
 	return sqrt(getobjectivevalue(m)), getvalue(X)
+end
+
+function h2lmi(G::TransferFunction)
+	return h2lmi(ss(G))
 end
 
 function complex2real(A)
