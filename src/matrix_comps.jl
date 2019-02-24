@@ -598,7 +598,7 @@ function hinflmi(G::StateSpace)
 	n1,=size(A);
 	n2,=reverse(size(B));
 
-	solver=SCSSolver(eps=1e-6,max_iters=100000)
+	solver=SCSSolver(eps=1e-6,max_iters=100000,verbose=0)
 	m=Model(solver=solver)
 	@variable(m,g2)
 	@variable(m,X[1:n1,1:n1],SDP) 	# symmetric positive semidefinite
@@ -645,6 +645,38 @@ end
 function h2lmi(G::TransferFunction)
 	return h2lmi(ss(G))
 end
+
+
+function hinfbis(G::StateSpace,rl,ru)
+	r=(ru+rl)/2
+	rprev=0;
+	A=G.A;
+	B=G.B;
+	C=G.C;
+	D=G.D;
+
+	while abs(r-rprev)>0.0001
+    	rprev=r;
+    	R=r^2*I-D'*D;
+    	H=[A+B*inv(R)*D'*C, B*inv(R)*B';
+            -C'*(I+D*inv(R)*D')*C,-(A+B*inv(R)*D'*C)'];
+    	lambda=eigvals(H);
+    	rutemp=ru;
+    	for i=1:length(lambda)
+        	if abs(real(lambda[i]))<0.0000001
+            	rl=r;
+            	ru=rutemp;
+            	break;
+        	end
+        	ru=r;
+    	end
+    	r=(ru+rl)/2
+	end
+	return r
+end
+
+
+
 
 function complex2real(A)
 	# Convert complex eigendecomposition of real matrix

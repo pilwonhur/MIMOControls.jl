@@ -18,6 +18,7 @@ export	kalmandecomp,
 		eye,
 		eyec,
 		hinflmi,
+		hinfbis,
 		h2lmi,
 		splitSS,
 		complex2real
