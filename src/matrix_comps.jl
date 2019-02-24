@@ -698,6 +698,8 @@ function splitSS(G::StateSpace)
 	return out;
 end
 
-
+function splitSS(G::TransferFunction)
+	return splitSS(ss(G))
+end
 
 
