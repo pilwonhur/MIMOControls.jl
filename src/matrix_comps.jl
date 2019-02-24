@@ -707,8 +707,8 @@ function complex2real(A)
 		end
 
 		# A=V*D*Vinv=V*(T*Tinv)*D*(T*Tinv)*Vinv=(V*T)*(Tinv*D*T)*(V*T)inv
-		D=inv(T)*diagm(0=>d)*T;
-		V=v*T;
+		D=real(inv(T)*diagm(0=>d)*T);
+		V=real(v*T);
 	else
 		T=eye(n);
 	end
