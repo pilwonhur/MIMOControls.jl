@@ -658,8 +658,8 @@ function hinfbis(G::StateSpace,rl,ru)
 	while abs(r-rprev)>0.0001
     	rprev=r;
     	R=r^2*I-D'*D;
-    	H=[A+B*inv(R)*D'*C, B*inv(R)*B';
-            -C'*(I+D*inv(R)*D')*C,-(A+B*inv(R)*D'*C)'];
+    	H=[A+B*inv(R)*D'*C B*inv(R)*B';
+            -C'*(I+D*inv(R)*D')*C -(A+B*inv(R)*D'*C)'];
     	lambda=eigvals(H);
     	rutemp=ru;
     	for i=1:length(lambda)
