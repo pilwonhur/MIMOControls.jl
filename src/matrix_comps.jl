@@ -663,7 +663,7 @@ function h2gram(G::StateSpace)
 	# returns gamma and P using LMI
 	# http://www.juliaopt.org/JuMP.jl/stable/refmodel.html
 	
-	Wo=ctrb(G,:o);
+	Wo=gram(G,:o);
 	# return sqrt(getobjectivevalue(m)), getvalue(X)
 	return sqrt(tr(G.B'*Wo*G.B))
 end
