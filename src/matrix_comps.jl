@@ -702,4 +702,11 @@ function splitSS(G::TransferFunction)
 	return splitSS(ss(G))
 end
 
+function ss(G::TransferFunction,opt)
+	if opt == "minimal"
+		return minimumreal(G);
+	else
+		error("Your option should be \"minimal\".")
+	end
+end
 
