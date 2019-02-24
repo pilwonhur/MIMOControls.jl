@@ -682,7 +682,7 @@ function splitSS(G::StateSpace)
 		Cnew=Gmin.C*v;
 		Dnew=Gmin.D;		
 	else 	# if complex
-		T=complex2real(A)
+		T=complex2real(Gmin.A)
 
 		Anew=T.D;
 		Bnew=inv(T.V)*Gmin.B;
