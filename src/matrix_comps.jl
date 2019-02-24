@@ -634,7 +634,7 @@ function h2lmi(G::StateSpace)
 	D=G.D;
 	n,=size(A);
 	
-	solver=SCSSolver(eps=1e-6,max_iters=100000,verbose=0)
+	solver=SCSSolver(eps=1e-6,max_iters=100000,verbose=1)
 	m=Model(solver=solver)
 	@variable(m,X[1:n,1:n],SDP) 	# symmetric positive semidefinite
 	@objective(m,Min,tr(X))
