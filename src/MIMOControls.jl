@@ -20,6 +20,7 @@ export	kalmandecomp,
 		hinflmi,
 		hinfbis,
 		h2lmi,
+		h2gram,
 		splitSS,
 		complex2real
 

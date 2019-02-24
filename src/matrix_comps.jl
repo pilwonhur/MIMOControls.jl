@@ -649,6 +649,29 @@ function h2lmi(G::TransferFunction)
 	return h2lmi(ss(G))
 end
 
+"""`Gs=h2gram(G::StateSpace)`
+	`Gs=h2gram(G::TransferFunction)`
+Author: Pilwon Hur, Ph.D.
+
+returns h2 norm of the given system using Gramian
+`G`: state space model of `G`
+"""
+function h2gram(G::StateSpace)
+	# Author: Pilwon Hur, Ph.D.
+	# 
+	# Accepts the G, state space model
+	# returns gamma and P using LMI
+	# http://www.juliaopt.org/JuMP.jl/stable/refmodel.html
+	
+	Wo=ctrb(G,:o);
+	# return sqrt(getobjectivevalue(m)), getvalue(X)
+	return sqrt(tr(G.B'*Wo*G.B))
+end
+
+function h2gram(G::TransferFunction)
+	return h2gram(ss(G))
+end
+
 """`Gs=hinfbis(G::StateSpace)`
 	`Gs=hinfbis(G::TransferFunction)`
 Author: Pilwon Hur, Ph.D.
