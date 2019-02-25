@@ -633,16 +633,24 @@ function h2lmi(G::StateSpace)
 	C=G.C;
 	D=G.D;
 	n,=size(A);
-	
-	solver=SCSSolver(eps=1e-6,max_iters=100000,verbose=1)
-	m=Model(solver=solver)
-	@variable(m,X[1:n,1:n],SDP) 	# symmetric positive semidefinite
-	@objective(m,Min,tr(X))
-	@SDconstraint(m,A*X+X*A'+C'*C<=eps()*eye(n))
-	JuMP.solve(m)
+
+	# old version	0.18
+	# solver=SCSSolver(eps=1e-6,max_iters=100000,verbose=1)
+	# m=Model(solver=solver)
+	# @variable(m,X[1:n,1:n],SDP) 	# symmetric positive semidefinite
+	# @objective(m,Min,tr(B'*X*B))
+	# @SDconstraint(m,A*X+X*A'+C'*C<=eps()*eye(n))
+	# JuMP.solve(m)
+
+	# version 0.19
+    m = Model(with_optimizer(SCS.Optimizer,eps=1e-6,max_iters=100000,verbose=1))
+    @variable(m,X[1:n,1:n],PSD)
+    @objective(m,Min,tr(B'*X*B))
+    @SDconstraint(m,A*X+X*A'+C'*C<=eps()*eye(n) )
+    JuMP.optimize!(m)
 
 	# return sqrt(getobjectivevalue(m)), getvalue(X)
-	return sqrt(tr(B'*getvalue(X)*B)), getvalue(X)
+    return sqrt(JuMP.objective_value(m)), JuMP.value(X)
 end
 
 function h2lmi(G::TransferFunction)
