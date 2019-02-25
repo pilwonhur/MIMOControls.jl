@@ -650,7 +650,7 @@ function h2lmi(G::StateSpace)
     JuMP.optimize!(m)
 
 	# return sqrt(getobjectivevalue(m)), getvalue(X)
-    return sqrt(JuMP.objective_value(m)), JuMP.value(X)
+    return sqrt(JuMP.objective_value(m)), JuMP.getvalue(X)
 end
 
 function h2lmi(G::TransferFunction)
