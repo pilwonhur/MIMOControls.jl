@@ -656,12 +656,12 @@ function h2lmi(G::StateSpace)
 	# JuMP.solve(m)
 
 	# version 0.19
-    # m = Model(with_optimizer(SCS.Optimizer,eps=1e-6,max_iters=100000,verbose=1))
-    # @variable(m,X[1:n,1:n],PSD)
-    # @objective(m,Min,tr(B'*X*B))
-    # @SDconstraint(m,A'*X+X*A+C'*C<=-eps()*eye(n) )
-    # JuMP.optimize!(m)
-
+    m = Model(with_optimizer(SCS.Optimizer,eps=1e-6,max_iters=100000,verbose=1))
+    @variable(m,X[1:n,1:n],PSD)
+    @objective(m,Min,tr(B'*X*B))
+    @SDconstraint(m,A'*X+X*A+C'*C<=-eps()*eye(n) )
+    JuMP.optimize!(m)
+    return sqrt(JuMP.objective_value(m))
 	# return sqrt(getobjectivevalue(m)), getvalue(X)
     # return sqrt(JuMP.objective_value(m)), JuMP.value(X)
 
@@ -669,13 +669,12 @@ function h2lmi(G::StateSpace)
     # https://github.com/JuliaOpt/Convex.jl
     # https://convexjl.readthedocs.io/en/latest/solvers.html
 
-    solver=SCSSolver(eps=1e-6,max_iters=100000,verbose=0)
-	# X=Variable(n,n)
-	X=Semidefinite(n)
-	p=minimize(tr(B'*X*B))
-	p.constraints+=A'*X+X*A+C'*C<zeros(n,n)
-	solve!(p, solver)
-	return sqrt(p.optval), X.value
+ #    solver=SCSSolver(eps=1e-6,max_iters=100000,verbose=0)
+	# X=Semidefinite(n) # X=Variable(n,n)
+	# p=minimize(tr(B'*X*B))
+	# p.constraints+=A'*X+X*A+C'*C<zeros(n,n)
+	# solve!(p, solver)
+	# return sqrt(p.optval), X.value
 end
 
 function h2lmi(G::TransferFunction)
