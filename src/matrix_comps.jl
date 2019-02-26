@@ -634,6 +634,8 @@ function h2lmi(G::StateSpace)
 	D=G.D;
 	n,=size(A);
 
+	# JuMP version
+
 	# old version	0.18
 	# solver=SCSSolver(eps=1e-6,max_iters=100000,verbose=1)
 	# m=Model(solver=solver)
@@ -643,15 +645,24 @@ function h2lmi(G::StateSpace)
 	# JuMP.solve(m)
 
 	# version 0.19
-    m = Model(with_optimizer(SCS.Optimizer,eps=1e-6,max_iters=100000,verbose=1))
-    @variable(m,X[1:n,1:n],PSD)
-    @objective(m,Min,tr(B'*X*B))
-    @SDconstraint(m,A'*X+X*A+C'*C<=-eps()*eye(n) )
-    JuMP.optimize!(m)
+    # m = Model(with_optimizer(SCS.Optimizer,eps=1e-6,max_iters=100000,verbose=1))
+    # @variable(m,X[1:n,1:n],PSD)
+    # @objective(m,Min,tr(B'*X*B))
+    # @SDconstraint(m,A'*X+X*A+C'*C<=-eps()*eye(n) )
+    # JuMP.optimize!(m)
 
 	# return sqrt(getobjectivevalue(m)), getvalue(X)
-    # return sqrt(JuMP.objective_value(m))
-    return getvalue(X)
+    # return sqrt(JuMP.objective_value(m)), JuMP.value(X)
+
+    # Convex version
+    
+    solver=SCSSolver(eps=1e-6,max_iters=100000,verbose=1)
+	# X=Variable(n,n)
+	X=Semidefinite(n)
+	p=minimize(tr(B'*X*B))
+	p.constraints+=A'*X+X*A+C'*C<zeros(n,n)
+	solve!(p, solver)
+	return sqrt(p.optval), X.value
 end
 
 function h2lmi(G::TransferFunction)

@@ -26,7 +26,7 @@ export	kalmandecomp,
 
 
 
-using JuMP, SCS, ControlSystems, LinearAlgebra
+using JuMP, Convex, SCS, ControlSystems, LinearAlgebra
 
 include("matrix_comps.jl")
 end # module
