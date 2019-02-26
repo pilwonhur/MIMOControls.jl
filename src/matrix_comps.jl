@@ -611,25 +611,25 @@ function hinflmi(G::StateSpace)
 	# return sqrt(getvalue(g2)), getvalue(X)
 
 	# version 0.19
-    m = Model(with_optimizer(SCS.Optimizer,eps=1e-6,max_iters=100000,verbose=0))
-    @variable(m,g2)
-    @variable(m,X[1:n1,1:n1],PSD)
-    @objective(m,Min,g2)
+    # m = Model(with_optimizer(SCS.Optimizer,eps=1e-6,max_iters=100000,verbose=0))
+    # @variable(m,g2)
+    # @variable(m,X[1:n1,1:n1],PSD)
+    # @objective(m,Min,g2)
     # @constraint(m,g2>=eps())
-    @SDconstraint(m,[A'*X+X*A+C'*C X*B+C'*D;(X*B+C'*D)' D'*D-g2.*eye(n2)]<=-eps()*eye(n1+n2))
-    JuMP.optimize!(m)
-    return sqrt(JuMP.objective_value(m))
+    # @SDconstraint(m,[A'*X+X*A+C'*C X*B+C'*D;(X*B+C'*D)' D'*D-g2.*eye(n2)]<=-eps()*eye(n1+n2))
+    # JuMP.optimize!(m)
+    # return sqrt(JuMP.objective_value(m))
 
 
 	# Convex version
 
-	# solver=SCSSolver(eps=1e-6,max_iters=100000,verbose=0)
-	# g2=Variable(Positive())
-	# X=Semidefinite(n1)
-	# p=minimize(g2)
-	# p.constraints+=[A'*X+X*A+C'*C X*B+C'*D;(X*B+C'*D)' D'*D-g2*eye(n2)]<-eps()*eye(n1+n2)
-	# solve!(p, solver)
-	# return sqrt(p.optval), X.value
+	solver=SCSSolver(eps=1e-6,max_iters=100000,verbose=0)
+	g2=Variable(Positive())
+	X=Semidefinite(n1)
+	p=minimize(g2)
+	p.constraints+=[A'*X+X*A+C'*C X*B+C'*D;(X*B+C'*D)' D'*D-g2*eye(n2)]<-eps()*eye(n1+n2)
+	solve!(p, solver)
+	return sqrt(p.optval), X.value
 end
 
 function hinflmi(G::TransferFunction)
