@@ -616,7 +616,7 @@ function hinflmi(G::StateSpace)
     @variable(m,X[1:n1,1:n1],PSD)
     @objective(m,Min,g2)
     @constraint(m,g2>=eps())
-    @SDconstraint(m,[A'*X+X*A+C'*C X*B+C'*D;(X*B+C'*D)' D'*D-g2*eye(n2)]<=eps()*eye(n1+n2))
+    @SDconstraint(m,[A'*X+X*A+C'*C X*B+C'*D;(X*B+C'*D)' D'*D-g2.*eye(n2)]<=-eps()*eye(n1+n2))
     JuMP.optimize!(m)
     return sqrt(JuMP.objective_value(m))
 
