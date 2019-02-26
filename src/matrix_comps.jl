@@ -599,15 +599,26 @@ function hinflmi(G::StateSpace)
 	n1,=size(A);
 	n2,=reverse(size(B));
 
-	solver=SCSSolver(eps=1e-6,max_iters=100000,verbose=0)
-	m=Model(solver=solver)
-	@variable(m,g2)
-	@variable(m,X[1:n1,1:n1],SDP) 	# symmetric positive semidefinite
-	@objective(m,Min,g2)
-	@SDconstraint(m,[A'*X+X*A+C'*C X*B+C'*D;(X*B+C'*D)' D'*D-g2*eye(n2)]<=eps()*eye(n1+n2))
-	JuMP.solve(m)
+	# JuMP old version
 
-	return sqrt(getvalue(g2)), getvalue(X)
+	# solver=SCSSolver(eps=1e-6,max_iters=100000,verbose=0)
+	# m=Model(solver=solver)
+	# @variable(m,g2)
+	# @variable(m,X[1:n1,1:n1],SDP) 	# symmetric positive semidefinite
+	# @objective(m,Min,g2)
+	# @SDconstraint(m,[A'*X+X*A+C'*C X*B+C'*D;(X*B+C'*D)' D'*D-g2*eye(n2)]<=eps()*eye(n1+n2))
+	# JuMP.solve(m)
+	# return sqrt(getvalue(g2)), getvalue(X)
+
+	# Convex version
+
+	solver=SCSSolver(eps=1e-6,max_iters=100000,verbose=0)
+	g2=Variable(Positive())
+	X=Semidefinite(n1)
+	p=minimize(g2)
+	p.constraints+=[A'*X+X*A+C'*C X*B+C'*D;(X*B+C'*D)' D'*D-g2*eye(n2)]<-eps()*eye(n1+n2)
+	solve!(p, solver)
+	return sqrt(p.optval), X.value
 end
 
 function hinflmi(G::TransferFunction)
@@ -655,8 +666,10 @@ function h2lmi(G::StateSpace)
     # return sqrt(JuMP.objective_value(m)), JuMP.value(X)
 
     # Convex version
-    
-    solver=SCSSolver(eps=1e-6,max_iters=100000,verbose=1)
+    # https://github.com/JuliaOpt/Convex.jl
+    # https://convexjl.readthedocs.io/en/latest/solvers.html
+
+    solver=SCSSolver(eps=1e-6,max_iters=100000,verbose=0)
 	# X=Variable(n,n)
 	X=Semidefinite(n)
 	p=minimize(tr(B'*X*B))
