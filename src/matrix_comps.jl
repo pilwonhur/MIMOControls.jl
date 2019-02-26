@@ -647,7 +647,7 @@ function h2lmi(G::StateSpace)
     @variable(m,X[1:n,1:n],PSD)
     @objective(m,Min,tr(B'*X*B))
     # @SDconstraint(m,A*X+X*A'+C'*C<=zeros(n,n) )
-    @SDconstraint(m,A*X+X*A'+C'*C<=eps()*eye(n) )
+    @SDconstraint(m,A'*X+X*A+C'*C<=-eps()*eye(n) )
     JuMP.optimize!(m)
 
 	# return sqrt(getobjectivevalue(m)), getvalue(X)
