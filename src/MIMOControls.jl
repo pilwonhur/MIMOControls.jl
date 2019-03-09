@@ -24,7 +24,12 @@ export	kalmandecomp,
 		splitSS,
 		complex2real
 
-
+using Pkg
+pkg.add(JuMP)
+pkg.add(SCS)
+pkg.add(Convex)
+pkg.add(ControlSystems)
+pkg.add(LinearAlgebra)
 
 using JuMP, Convex, SCS, ControlSystems, LinearAlgebra
 
