@@ -25,11 +25,10 @@ export	kalmandecomp,
 		complex2real
 
 using Pkg
-pkg.add(JuMP)
-pkg.add(SCS)
-pkg.add(Convex)
-pkg.add(ControlSystems)
-pkg.add(LinearAlgebra)
+l = ["ControlSystems","LinearAlgebra","JuMP","SCS","Convex"]
+for item in l
+    Pkg.add(item)
+end
 
 using JuMP, Convex, SCS, ControlSystems, LinearAlgebra
 
