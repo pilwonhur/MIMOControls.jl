@@ -22,7 +22,8 @@ export	kalmandecomp,
 		h2lmi,
 		h2gram,
 		splitSS,
-		complex2real
+		complex2real,
+		LQRlmi
 
 using Pkg
 l = ["ControlSystems","LinearAlgebra","JuMP","SCS","Convex"]
