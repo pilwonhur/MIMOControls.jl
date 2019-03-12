@@ -666,7 +666,7 @@ function h2lmi(G::StateSpace)
 	# @SDconstraint(m,A*X+X*A'+C'*C<=eps()*eye(n))
 	# JuMP.solve(m)
 
-	# version 0.19
+	# version 0.19 # For the moment, 0.19 is not stable. Downgrade to 0.18.5
     m = Model(with_optimizer(SCS.Optimizer,eps=1e-6,max_iters=100000,verbose=0))
     @variable(m,X[1:n,1:n],PSD)
     @objective(m,Min,tr(B'*X*B))
