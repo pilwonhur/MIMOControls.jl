@@ -22,9 +22,14 @@ export	kalmandecomp,
 		h2lmi,
 		h2gram,
 		splitSS,
-		complex2real
+		complex2real,
+		LQRlmi
 
-
+using Pkg
+l = ["ControlSystems","LinearAlgebra","JuMP","SCS","Convex"]
+for item in l
+    Pkg.add(item)
+end
 
 using JuMP, Convex, SCS, ControlSystems, LinearAlgebra
 
