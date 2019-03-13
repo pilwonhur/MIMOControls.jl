@@ -586,6 +586,27 @@ Author: Pilwon Hur, Ph.D.
 returns hinf norm of the given system
 `G`: state space model of `G`
 """
+function LQRlmi(G::StateSpace,Q::Array{Float64,2},R::Float64)
+
+    A=G.A;
+    B=G.B;
+    C=G.C;
+    D=G.D;
+    
+    n1,=size(A);
+    n2,=reverse(size(Q));
+    solver=SCSSolver(eps=1e-6,max_iters=100000,verbose=0)
+    m = Model(solver=solver)
+    @variable(m,P[1:n1,1:n1],SDP)
+    @objective(m,Min,-tr(P))
+    @SDconstraint(m,[(P*A'+A*P-B*(R^-1)*B') P;
+                        P -inv(Q)]<=zeros((n1+n2),(n1+n2)))
+
+    # returns P matrix and Gain
+    JuMP.solve(m)
+    return inv(getvalue(P)), (R^1)*B'*inv(getvalue(P))
+end
+
 function hinflmi(G::StateSpace)
 	# Author: Pilwon Hur, Ph.D.
 	# 
