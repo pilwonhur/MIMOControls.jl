@@ -586,25 +586,49 @@ Author: Pilwon Hur, Ph.D.
 returns hinf norm of the given system
 `G`: state space model of `G`
 """
-function LQRlmi(G::StateSpace,Q::Array{Float64,2},R::Float64)
-
-    A=G.A;
-    B=G.B;
-    C=G.C;
-    D=G.D;
-    
-    n1,=size(A);
+function LQRlmi(G,Q::Array{Float64,2},R::Float64)
     n2,=reverse(size(Q));
     solver=SCSSolver(eps=1e-6,max_iters=100000,verbose=0)
     m = Model(solver=solver)
-    @variable(m,P[1:n1,1:n1],SDP)
-    @objective(m,Min,-tr(P))
-    @SDconstraint(m,[(P*A'+A*P-B*(R^-1)*B') P;
+    
+    if isa(G,Array{StateSpace{Float64,Array{Float64,2}},1})
+        T = 2
+        n1,=size(G[1].A);
+        @variable(m,P[1:n1,1:n1],SDP)
+        @objective(m,Min,-tr(P))
+        
+        for sys in G
+            @SDconstraint(m,[(P*sys.A'+sys.A*P-sys.B*(R^-1)*sys.B') P;
                         P -inv(Q)]<=zeros((n1+n2),(n1+n2)))
-
-    # returns P matrix and Gain
+        end
+        
+    elseif isa(G,StateSpace{Float64,Array{Float64,2}})
+        T = 1
+        n1,=size(G.A);
+        @variable(m,P[1:n1,1:n1],SDP)
+        @objective(m,Min,-tr(P))
+        @SDconstraint(m,[(P*G.A'+G.A*P-G.B*(R^-1)*G.B') P;
+                        P -inv(Q)]<=zeros((n1+n2),(n1+n2)))
+    else
+        print("Not in State Space or State Space list")
+        return false
+    end
+    
+    
+    
     JuMP.solve(m)
-    return inv(getvalue(P)), (R^1)*B'*inv(getvalue(P))
+    
+    if T==2
+        K = Array{Float64}[]
+        for sys in G
+            push!(K,(R^1)*sys.B'*inv(getvalue(P)))
+        end
+    else
+        K = (R^1)*G.B'*inv(getvalue(P))
+    end
+    
+    # returns P matrix and Gain
+    return inv(getvalue(P)), K
 end
 
 function hinflmi(G::StateSpace)
