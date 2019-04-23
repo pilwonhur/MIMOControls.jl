@@ -986,7 +986,7 @@ function are(A,R,Q)
 	end
 
 	X=X2/X1;
-	return X;
+	return real(X);
 end
 
 
