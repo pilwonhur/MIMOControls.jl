@@ -764,7 +764,7 @@ Author: Pilwon Hur, Ph.D.
 returns h2 controller of the given system G and its LFT
 `G`: state space model of `G`
 """
-function h2syn(G::StateSpace,ny::Int8,nu::Int8)
+function h2syn(G::StateSpace,ny,nu)
 	# Author: Pilwon Hur, Ph.D.
 	# 
 	# Accepts the G, state space model
