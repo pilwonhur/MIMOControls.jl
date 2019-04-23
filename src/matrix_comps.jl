@@ -794,14 +794,16 @@ function h2syn(G::StateSpace,ny,nu)
 	Ruu=D12'*D12;
 	Ac=A-B2*inv(Ruu)*D12'*C1;
 	Qc=C1'*(I-D12*inv(Ruu)*D12')*C1;
-	X2=care(Ac,B2,Qc,Ruu);
+	# X2=care(Ac,B2,Qc,Ruu);
+	X2=are(Ac,B2*inv(Ruu)*B2',Qc);
 	F=-inv(Ruu)*(B2'*X2+D12'*C1);
 
 	# observer design
 	 Rww=D21*D21';
 	Ao=A-B1*D21'*inv(Rww)*C2;
 	Qo=B1*(I-D21'*inv(Rww)*D21)*B1'
-	Y2=care(Ao',C2',Qo,Rww)
+	# Y2=care(Ao',C2',Qo,Rww)
+	Y2=are(Ao',C2'*inv(Rww)*C2,Qo)
 	L=-(Y2*C2'+B1*D21')*inv(Rww)
 
 	# construct the H2 controller
@@ -855,7 +857,8 @@ function hinfsyn(G::StateSpace,r,ny,nu)
 	Qc=C1'*(I-D12*inv(R1)*D12')'*(I-D12*inv(R1)*D12')*C1;
 	R=B1*B1'/r^2-B2*inv(R1)*B2';
 	
-	Xinf=care(Ac,I,Qc,inv(R));
+	# Xinf=care(Ac,I,Qc,inv(R));
+	Xinf=are(Ac,R,Qc);
 	F2=-inv(R1)*(B2'*Xinf+D12'*C1);
 	
 	# observer design
@@ -864,7 +867,8 @@ function hinfsyn(G::StateSpace,r,ny,nu)
 	Qo=B1*(I-D21'*inv(R2)*D21)*(I-D21'*inv(R2)*D21)'*B1';
 	R=C1'*C1/r^2-C2'*inv(R2)*C2;
 	
-	Yinf=care(Ao',I,Qo,inv(R));
+	# Yinf=care(Ao',I,Qo,inv(R));
+	Yinf=care(Ao',R,Qo);
 	Linf=-inv(I-1/r^2*Yinf*Xinf)*(Yinf*C2'+B1*D21')*inv(R2);
 
 	F1=1/r^2 *(B1*B1'+Linf*D21*B1')*Xinf;
