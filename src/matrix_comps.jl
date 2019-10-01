@@ -191,13 +191,16 @@ function kalmandecomp(A,B,C,D)
 			F=mqr([t2 cont_subspace],p=(1:size(t2)[2]));
 			t1=F.U[:,size(t2)[2]+1:n];
 		else # if not fully controllable
-			coord1=nullspace(Proj_uncontsubspace*unobsv_subspace);
+			# test the idea of nullspace(cont_subspace unobsv_subspace)
+			coord1=nullspace([cont_subspace unobsv_subspace])
+			# coord1=nullspace(Proj_uncontsubspace*unobsv_subspace);
 
 			# controllable/unobservable subspace
 			if length(coord1)>0		# if t2 has elements
 				ncontunobs,=reverse(size(coord1));
 				t2=zeros(n,ncontunobs);
-				[t2[:,i]=unobsv_subspace*coord1[:,i] for i=1:ncontunobs];
+				[t2[:,i]=cont_subspace*coord1[1:nc,i] for i=1:ncontunobs];
+				# [t2[:,i]=unobsv_subspace*coord1[:,i] for i=1:ncontunobs];
 
 				F=mqr([t2 unobsv_subspace],p=(1:size(t2)[2]));	# F.U will return orthonormal basis for unobservable subspace
 				t4=F.U[:,ncontunobs+1:n-no]
