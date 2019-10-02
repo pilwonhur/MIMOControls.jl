@@ -648,23 +648,23 @@ function hinflmi(G::StateSpace)
 	n2,=reverse(size(B));
 
 	# JuMP old version 0.18
-	model=Model(solver=SCSSolver(eps=1e-6,max_iters=100000,verbose=0))
-	@variable(model,g2>=0)
-	@variable(model,X[1:n1,1:n1],SDP) 	# symmetric positive semidefinite
-	@objective(model,Min,g2)
-	@SDconstraint(model,[A'*X+X*A+C'*C X*B+C'*D;(X*B+C'*D)' D'*D-g2.*eye(n2)]<=eps()*eye(n1+n2))
-	JuMP.solve(model)
-	return sqrt(getvalue(g2)), getvalue(X)
+	# model=Model(solver=SCSSolver(eps=1e-6,max_iters=100000,verbose=0))
+	# @variable(model,g2>=0)
+	# @variable(model,X[1:n1,1:n1],SDP) 	# symmetric positive semidefinite
+	# @objective(model,Min,g2)
+	# @SDconstraint(model,[A'*X+X*A+C'*C X*B+C'*D;(X*B+C'*D)' D'*D-g2.*eye(n2)]<=eps()*eye(n1+n2))
+	# JuMP.solve(model)
+	# return sqrt(getvalue(g2)), getvalue(X)
 
 	# version 0.19 # For the moment, 0.19 is not stable. Downgrade to 0.18.5
-    # m = Model(with_optimizer(SCS.Optimizer,eps=1e-6,max_iters=100000,verbose=0))
-    # @variable(m,g2)
-    # @variable(m,X[1:n1,1:n1],PSD)
-    # @objective(m,Min,g2)
-    # @constraint(m,g2>=eps())
-    # @SDconstraint(m,[A'*X+X*A+C'*C X*B+C'*D;(X*B+C'*D)' D'*D-g2.*eye(n2)]<=zeros(n1+n2,n1+n2))
-    # JuMP.optimize!(m)
-    # return sqrt(JuMP.objective_value(m))
+    m = Model(with_optimizer(SCS.Optimizer,eps=1e-6,max_iters=100000,verbose=0))
+    @variable(m,g2)
+    @variable(m,X[1:n1,1:n1],PSD)
+    @objective(m,Min,g2)
+    @constraint(m,g2>=eps())
+    @SDconstraint(m,[A'*X+X*A+C'*C X*B+C'*D;(X*B+C'*D)' D'*D-g2.*eye(n2)]<=zeros(n1+n2,n1+n2))
+    JuMP.optimize!(m)
+    return sqrt(JuMP.objective_value(m))
 
 
 	# Convex version
@@ -705,22 +705,22 @@ function h2lmi(G::StateSpace)
 	# JuMP version
 
 	# old version	0.18
-	solver=SCSSolver(eps=1e-6,max_iters=100000,verbose=1)
-	m=Model(solver=solver)
-	@variable(m,X[1:n,1:n],SDP) 	# symmetric positive semidefinite
-	@objective(m,Min,tr(B'*X*B))
-	@SDconstraint(m,A*X+X*A'+C'*C<=eps()*eye(n))
-	JuMP.solve(m)
-	return sqrt(getobjectivevalue(m)), getvalue(X)
+	# solver=SCSSolver(eps=1e-6,max_iters=100000,verbose=1)
+	# m=Model(solver=solver)
+	# @variable(m,X[1:n,1:n],SDP) 	# symmetric positive semidefinite
+	# @objective(m,Min,tr(B'*X*B))
+	# @SDconstraint(m,A*X+X*A'+C'*C<=eps()*eye(n))
+	# JuMP.solve(m)
+	# return sqrt(getobjectivevalue(m)), getvalue(X)
 
 	# version 0.19 # For the moment, 0.19 is not stable. Downgrade to 0.18.5
-    # m = Model(with_optimizer(SCS.Optimizer,eps=1e-6,max_iters=100000,verbose=0))
-    # @variable(m,X[1:n,1:n],PSD)
-    # @objective(m,Min,tr(B'*X*B))
-    # @SDconstraint(m,A'*X+X*A+C'*C<=-eps()*eye(n) )
-    # JuMP.optimize!(m)
+    m = Model(with_optimizer(SCS.Optimizer,eps=1e-6,max_iters=100000,verbose=0))
+    @variable(m,X[1:n,1:n],PSD)
+    @objective(m,Min,tr(B'*X*B))
+    @SDconstraint(m,A'*X+X*A+C'*C<=-eps()*eye(n) )
+    JuMP.optimize!(m)
     # return sqrt(JuMP.objective_value(m))
-    # return sqrt(JuMP.objective_value(m)), JuMP.value(X)
+    return sqrt(JuMP.objective_value(m)), JuMP.value(X)
 
     # Convex version
     # https://github.com/JuliaOpt/Convex.jl
