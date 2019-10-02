@@ -30,12 +30,12 @@ export	kalmandecomp,
 		are
 
 using Pkg
-l = ["ControlSystems","LinearAlgebra","JuMP","SCS","Convex"]
+l = ["ControlSystems","LinearAlgebra","JuMP","SCS"]
 for item in l
     Pkg.add(item)
 end
 
-using JuMP, Convex, SCS, ControlSystems, LinearAlgebra
+using JuMP, SCS, ControlSystems, LinearAlgebra
 
 include("matrix_comps.jl")
 end # module
