@@ -656,15 +656,17 @@ function hinflmi(G::StateSpace)
 	# JuMP.solve(model)
 	# return sqrt(getvalue(g2)), getvalue(X)
 
-	# version 0.19 # For the moment, 0.19 is not stable. Downgrade to 0.18.5
-    m = Model(with_optimizer(SCS.Optimizer,eps=1e-6,max_iters=100000,verbose=0))
-    @variable(m,g2)
+	# version 0.19 # In JuMP v0.19, SCS Solver does not seem to provide 
+	# correct solution. So, Try to either downgrade JuMP to 0.18.5 or 
+	# use different SDP solver. In this case, I used JuMP 0.19 and ProxSDP Solver.
+	# https://github.com/mariohsouto/ProxSDP.jl
+    m = Model(with_optimizer(ProxSDP.Optimizer,max_iters=100000,verbose=1))
+    @variable(m,g2>=0)
     @variable(m,X[1:n1,1:n1],PSD)
     @objective(m,Min,g2)
-    @constraint(m,g2>=eps())
     @SDconstraint(m,[A'*X+X*A+C'*C X*B+C'*D;(X*B+C'*D)' D'*D-g2.*eye(n2)]<=zeros(n1+n2,n1+n2))
     JuMP.optimize!(m)
-    return sqrt(JuMP.objective_value(m))
+    return sqrt(JuMP.objective_value(m)), JuMP.value.(X)
 
 
 	# Convex version
@@ -713,14 +715,16 @@ function h2lmi(G::StateSpace)
 	# JuMP.solve(m)
 	# return sqrt(getobjectivevalue(m)), getvalue(X)
 
-	# version 0.19 # For the moment, 0.19 is not stable. Downgrade to 0.18.5
-    m = Model(with_optimizer(SCS.Optimizer,eps=1e-6,max_iters=100000,verbose=0))
+	# version 0.19 # In JuMP v0.19, SCS Solver does not seem to provide 
+	# correct solution. So, Try to either downgrade JuMP to 0.18.5 or 
+	# use different SDP solver. In this case, I used JuMP 0.19 and ProxSDP Solver.
+	# https://github.com/mariohsouto/ProxSDP.jl
+    m = Model(with_optimizer(ProxSDP.Optimizer,eps=1e-6,max_iters=100000,verbose=1))
     @variable(m,X[1:n,1:n],PSD)
     @objective(m,Min,tr(B'*X*B))
-    @SDconstraint(m,A'*X+X*A+C'*C<=-eps()*eye(n) )
+    @SDconstraint(m,A'*X+X*A+C'*C<=-eps()*eye(n))
     JuMP.optimize!(m)
-    # return sqrt(JuMP.objective_value(m))
-    return sqrt(JuMP.objective_value(m)), JuMP.value(X)
+    return sqrt(JuMP.objective_value(m)), JuMP.value.(X)
 
     # Convex version
     # https://github.com/JuliaOpt/Convex.jl
