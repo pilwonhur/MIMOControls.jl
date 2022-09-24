@@ -719,7 +719,11 @@ function h2lmi(G::StateSpace)
 	# correct solution. So, Try to either downgrade JuMP to 0.18.5 or 
 	# use different SDP solver. In this case, I used JuMP 0.19 and ProxSDP Solver.
 	# https://github.com/mariohsouto/ProxSDP.jl
-    m = Model(with_optimizer(ProxSDP.Optimizer,eps=1e-6,max_iters=100000,verbose=1))
+    # m = Model(with_optimizer(ProxSDP.Optimizer,eps=1e-6,max_iters=100000,verbose=1))
+    m = Model(ProxSDP.Optimizer)
+    set_optimizer_attribute(model,"max_iter",50000)
+	set_optimizer_attribute(model,"print_level",5)
+
     @variable(m,X[1:n,1:n],PSD)
     @objective(m,Min,tr(B'*X*B))
     @constraint(m,A'*X+X*A+C'*C<=-eps()*eye(n))	# SDconstraint -> constraint
