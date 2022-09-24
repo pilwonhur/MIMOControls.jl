@@ -601,7 +601,7 @@ function LQRlmi(G,Q::Array{Float64,2},R::Float64)
         @objective(m,Min,-tr(P))
         
         for sys in G
-            @SDconstraint(m,[(P*sys.A'+sys.A*P-sys.B*(R^-1)*sys.B') P;
+            @constraint(m,[(P*sys.A'+sys.A*P-sys.B*(R^-1)*sys.B') P;  # SDconstraint -> constraint
                         P -inv(Q)]<=zeros((n1+n2),(n1+n2)))
         end
         
@@ -610,7 +610,7 @@ function LQRlmi(G,Q::Array{Float64,2},R::Float64)
         n1,=size(G.A);
         @variable(m,P[1:n1,1:n1],SDP)
         @objective(m,Min,-tr(P))
-        @SDconstraint(m,[(P*G.A'+G.A*P-G.B*(R^-1)*G.B') P;
+        @constraint(m,[(P*G.A'+G.A*P-G.B*(R^-1)*G.B') P; 	# SDconstraint -> constraint
                         P -inv(Q)]<=zeros((n1+n2),(n1+n2)))
     else
         print("Not in State Space or State Space list")
@@ -664,7 +664,7 @@ function hinflmi(G::StateSpace)
     @variable(m,g2>=0)
     @variable(m,X[1:n1,1:n1],PSD)
     @objective(m,Min,g2)
-    @SDconstraint(m,[A'*X+X*A+C'*C X*B+C'*D;(X*B+C'*D)' D'*D-g2.*eye(n2)]<=zeros(n1+n2,n1+n2))
+    @constraint(m,[A'*X+X*A+C'*C X*B+C'*D;(X*B+C'*D)' D'*D-g2.*eye(n2)]<=zeros(n1+n2,n1+n2))	# SDconstraint -> constraint
     JuMP.optimize!(m)
     return sqrt(JuMP.objective_value(m)), JuMP.value.(X)
 
@@ -722,7 +722,7 @@ function h2lmi(G::StateSpace)
     m = Model(with_optimizer(ProxSDP.Optimizer,eps=1e-6,max_iters=100000,verbose=1))
     @variable(m,X[1:n,1:n],PSD)
     @objective(m,Min,tr(B'*X*B))
-    @SDconstraint(m,A'*X+X*A+C'*C<=-eps()*eye(n))
+    @constraint(m,A'*X+X*A+C'*C<=-eps()*eye(n))	# SDconstraint -> constraint
     JuMP.optimize!(m)
     return sqrt(JuMP.objective_value(m)), JuMP.value.(X)
 
