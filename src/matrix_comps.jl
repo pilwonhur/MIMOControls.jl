@@ -721,8 +721,8 @@ function h2lmi(G::StateSpace)
 	# https://github.com/mariohsouto/ProxSDP.jl
     # m = Model(with_optimizer(ProxSDP.Optimizer,eps=1e-6,max_iters=100000,verbose=1))
     m = Model(ProxSDP.Optimizer)
-    set_optimizer_attribute(model,"max_iter",50000)
-	set_optimizer_attribute(model,"print_level",5)
+    set_optimizer_attribute(m,"max_iter",50000)
+	set_optimizer_attribute(m,"print_level",5)
 
     @variable(m,X[1:n,1:n],PSD)
     @objective(m,Min,tr(B'*X*B))
